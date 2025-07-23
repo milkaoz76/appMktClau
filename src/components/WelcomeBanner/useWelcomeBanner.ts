@@ -1,6 +1,7 @@
 /**
  * Hook personalizado para la lógica de negocio del WelcomeBanner
  * Maneja todo el estado, navegación y eventos del componente de bienvenida
+ * CORREGIDO: Flujo de navegación arreglado
  */
 import { useState, useEffect } from 'react';
 import React from 'react';
@@ -48,15 +49,13 @@ export interface UseWelcomeBannerReturn {
 export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
   // Estado principal del componente
   const [currentSlide, setCurrentSlide] = useState<number>(0);
-  const [showOnboarding, setShowOnboarding] = useState<boolean>(true);
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(true);  // CORREGIDO: Iniciar siempre con onboarding
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [showWelcomeBanner, setShowWelcomeBanner] = useState<boolean>(false);
   const [showFirstRegistration, setShowFirstRegistration] = useState<boolean>(false);
 
   /**
    * Configuración de las diapositivas del onboarding
-   * Cada slide contiene icono, título, subtítulo y descripción
-   * ⚠️ CORREGIDO: Usando 'size' en lugar de 'className' para React Native
    */
   const slides: SlideData[] = [
     {
@@ -87,11 +86,10 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
 
   /**
    * Efecto para verificar si es la primera visita del usuario
-   * MODIFICADO: Siempre muestra onboarding en primera carga para testing
-   * Consulta AsyncStorage para verificar el estado del onboarding
+   * CORREGIDO: Lógica de navegación inicial arreglada
    */
   useEffect(() => {
-    let isMounted = true; // Prevenir actualizaciones si el componente se desmonta
+    let isMounted = true;
     
     const resolveOnboardingState = async () => {
       try {
@@ -113,32 +111,36 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
         // Solo actualizar estado si el componente sigue montado
         if (!isMounted) return;
         
-        // NUEVA LÓGICA: Forzar onboarding si está configurado o es primera visita
+        // NUEVA LÓGICA CORREGIDA
         if (forceOnboarding === 'true' || (!hasCompletedOnboarding && !hasSkippedOnboarding)) {
+          // Primera visita o forzar onboarding - MOSTRAR ONBOARDING
           console.log('📱 Mostrando onboarding (primera visita o forzado)');
           setShowOnboarding(true);
           setShowFirstRegistration(false);
           setIsCompleted(false);
           setShowWelcomeBanner(false);
-          // Limpiar flag de forzar onboarding
+          
           if (forceOnboarding === 'true') {
             await AsyncStorage.removeItem('force_onboarding');
           }
         } else if (hasCompletedOnboarding === 'true') {
+          // Usuario completó onboarding - MOSTRAR APP PRINCIPAL
+          console.log('✅ Usuario ya completó el onboarding - mostrando app principal');
           setShowOnboarding(false);
           setIsCompleted(true);
-          setShowFirstRegistration(true);
+          setShowFirstRegistration(false);
           setShowWelcomeBanner(false);
-          console.log('✅ Usuario ya completó el onboarding - navegando a FirstRegistration');
         } else if (hasSkippedOnboarding === 'true') {
+          // Usuario omitió onboarding - MOSTRAR APP PRINCIPAL CON BANNER
+          console.log('⏭️ Usuario había omitido el onboarding - mostrando app principal con banner');
           setShowOnboarding(false);
-          setShowFirstRegistration(true);
+          setIsCompleted(false);
+          setShowFirstRegistration(false);
           setShowWelcomeBanner(true);
-          console.log('⏭️ Usuario había omitido el onboarding - navegando a FirstRegistration con banner');
         }
       } catch (error) {
         console.error('❌ Error al verificar estado del onboarding:', error);
-        // En caso de error, usar estado por defecto (mostrar onboarding)
+        // En caso de error, mostrar onboarding por defecto
         if (isMounted) {
           setShowOnboarding(true);
           setShowFirstRegistration(false);
@@ -150,7 +152,6 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
 
     resolveOnboardingState();
     
-    // Cleanup function
     return () => {
       isMounted = false;
     };
@@ -183,37 +184,41 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
   };
 
   /**
-   * Omite el onboarding y navega directamente a FirstRegistration
+   * Omite el onboarding y navega a la app principal
+   * CORREGIDO: Navega a app principal, no a FirstRegistration
    */
   const skipOnboarding = async (): Promise<void> => {
     try {
-      console.log('⏭️ Usuario omitió el onboarding - navegando a FirstRegistration');
+      console.log('⏭️ Usuario omitió el onboarding - navegando a app principal');
       await AsyncStorage.setItem('onboarding_skipped', 'true');
       setShowOnboarding(false);
-      setShowWelcomeBanner(false);
-      setShowFirstRegistration(true);
+      setShowWelcomeBanner(true);  // CORREGIDO: Mostrar banner en app principal
+      setShowFirstRegistration(false);  // CORREGIDO: No navegar directo a FirstRegistration
+      setIsCompleted(false);
     } catch (error) {
       console.error('❌ Error al guardar estado de onboarding omitido:', error);
     }
   };
 
   /**
-   * Completa el onboarding y procede al registro de vehículo
+   * Completa el onboarding y procede a la app principal
+   * CORREGIDO: Navega a app principal, no directo a FirstRegistration
    */
   const completeOnboarding = async (): Promise<void> => {
     try {
       console.log('🎯 Iniciando proceso de completar onboarding...');
       await AsyncStorage.setItem('onboarding_completed', 'true');
-      await AsyncStorage.removeItem('onboarding_skipped'); // Limpiar estado de omitido
+      await AsyncStorage.removeItem('onboarding_skipped');
       
       console.log('💾 Estados guardados en AsyncStorage');
       console.log('🔄 Actualizando estados del componente...');
       
       setIsCompleted(true);
       setShowOnboarding(false);
-      setShowFirstRegistration(true);
+      setShowFirstRegistration(false);  // CORREGIDO: No navegar directo a FirstRegistration
+      setShowWelcomeBanner(false);
       
-      console.log('✅ Onboarding completado - navegando a FirstRegistration');
+      console.log('✅ Onboarding completado - navegando a app principal');
     } catch (error) {
       console.error('❌ Error al guardar estado de onboarding completado:', error);
     }
@@ -228,6 +233,7 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
     setShowOnboarding(true);
     setShowWelcomeBanner(false);
     setShowFirstRegistration(false);
+    setIsCompleted(false);
   };
 
   /**
@@ -244,14 +250,15 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
   };
 
   /**
-   * Maneja el registro de vehículo desde la pantalla final
+   * Maneja el registro de vehículo - NAVEGA A FirstRegistration
+   * CORREGIDO: Esta función sí debe navegar a FirstRegistration
    */
   const handleVehicleRegistration = (): void => {
-    console.log('🚗 Usuario inició registro de vehículo');
-    // Navegar a FirstRegistration
+    console.log('🚗 Usuario inició registro de vehículo - navegando a FirstRegistration');
     setShowFirstRegistration(true);
     setShowOnboarding(false);
     setIsCompleted(false);
+    setShowWelcomeBanner(false);
   };
 
   /**
@@ -260,11 +267,12 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
   const handleLaterRegistration = (): void => {
     console.log('⏰ Usuario pospuso el registro de vehículo');
     setIsCompleted(false);
+    setShowFirstRegistration(false);
+    setShowWelcomeBanner(true);
   };
 
   /**
    * Limpia todo el AsyncStorage y resetea la aplicación al estado inicial
-   * NUEVA FUNCIÓN: Para testing y debugging
    */
   const clearAllData = async (): Promise<void> => {
     try {
@@ -297,7 +305,6 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
 
   /**
    * Fuerza mostrar el onboarding en la próxima carga
-   * NUEVA FUNCIÓN: Para testing
    */
   const forceShowOnboarding = async (): Promise<void> => {
     try {

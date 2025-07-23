@@ -2,6 +2,7 @@
  * Componente FirstRegistration - Componente de presentación puro
  * Maneja la interfaz de usuario del registro de vehículos y gestión de mantenimiento
  * Compatible con Expo Web, Android e iOS
+ * CORREGIDO: Implementación completa del formulario de registro
  */
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal } from 'react-native';
@@ -183,12 +184,354 @@ const WelcomeScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
 };
 
 /**
+ * Pantalla de registro de vehículo - IMPLEMENTACIÓN COMPLETA
+ */
+const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
+  const { 
+    currentStep, 
+    setCurrentStep, 
+    formData, 
+    setFormData, 
+    brands, 
+    currentYear, 
+    errors, 
+    validateForm, 
+    handleSubmit,
+    setCurrentScreen 
+  } = useFirstRegistration();
+
+  console.log('📝 RegisterScreen renderizada, step:', currentStep);
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <View>
+            <View style={styles.registerStepHeader}>
+              <View style={styles.registerStepIcon}>
+                <Ionicons name="car-outline" size={32} color="#2563eb" />
+              </View>
+              <Text style={styles.subtitle}>Selecciona la marca</Text>
+              <Text style={styles.bodyText}>¿Cuál es la marca de tu vehículo?</Text>
+            </View>
+
+            <View style={styles.formGrid}>
+              {brands.map((brand) => (
+                <TouchableOpacity
+                  key={brand}
+                  onPress={() => setFormData({ ...formData, brand })}
+                  style={[
+                    styles.formBrandButton,
+                    formData.brand === brand && styles.formBrandButtonActive
+                  ]}
+                >
+                  <Text style={{ fontWeight: '500', color: formData.brand === brand ? '#2563eb' : '#6b7280' }}>
+                    {brand}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {errors.brand && <Text style={styles.formError}>{errors.brand}</Text>}
+          </View>
+        );
+
+      case 2:
+        return (
+          <View>
+            <View style={styles.registerStepHeader}>
+              <View style={styles.registerStepIcon}>
+                <Ionicons name="document-text-outline" size={32} color="#2563eb" />
+              </View>
+              <Text style={styles.subtitle}>Detalles del vehículo</Text>
+              <Text style={styles.bodyText}>Ingresa el modelo y año</Text>
+            </View>
+
+            <View>
+              <Text style={styles.formLabel}>Modelo</Text>
+              <TextInput
+                style={[styles.formInput, errors.model && styles.formInputError]}
+                value={formData.model}
+                onChangeText={(text) => setFormData({ ...formData, model: text })}
+                placeholder="Ej: Corolla, Focus, Civic..."
+              />
+              {errors.model && <Text style={styles.formError}>{errors.model}</Text>}
+
+              <Text style={styles.formLabel}>Año</Text>
+              <TextInput
+                style={[styles.formInput, errors.year && styles.formInputError]}
+                value={formData.year}
+                onChangeText={(text) => setFormData({ ...formData, year: text })}
+                placeholder={`Ej: ${currentYear - 5}`}
+                keyboardType="numeric"
+              />
+              {errors.year && <Text style={styles.formError}>{errors.year}</Text>}
+            </View>
+          </View>
+        );
+
+      case 3:
+        return (
+          <View>
+            <View style={styles.registerStepHeader}>
+              <View style={styles.registerStepIcon}>
+                <Ionicons name="speedometer-outline" size={32} color="#2563eb" />
+              </View>
+              <Text style={styles.subtitle}>Kilometraje actual</Text>
+              <Text style={styles.bodyText}>¿Cuántos kilómetros tiene actualmente?</Text>
+            </View>
+
+            <View>
+              <Text style={styles.formLabel}>Kilometraje</Text>
+              <TextInput
+                style={[styles.formInput, errors.mileage && styles.formInputError]}
+                value={formData.mileage}
+                onChangeText={(text) => setFormData({ ...formData, mileage: text })}
+                placeholder="Ej: 150000"
+                keyboardType="numeric"
+              />
+              {errors.mileage && <Text style={styles.formError}>{errors.mileage}</Text>}
+            </View>
+          </View>
+        );
+
+      case 4:
+        return (
+          <View>
+            <View style={styles.registerStepHeader}>
+              <View style={styles.registerStepIcon}>
+                <Ionicons name="checkmark-circle-outline" size={32} color="#16a34a" />
+              </View>
+              <Text style={styles.subtitle}>Confirmar registro</Text>
+              <Text style={styles.bodyText}>Revisa los datos antes de continuar</Text>
+            </View>
+
+            <View style={styles.formSummary}>
+              <View style={styles.formSummaryItem}>
+                <Text style={styles.smallText}>Marca:</Text>
+                <Text style={[styles.smallText, { fontWeight: '600' }]}>{formData.brand}</Text>
+              </View>
+              <View style={styles.formSummaryItem}>
+                <Text style={styles.smallText}>Modelo:</Text>
+                <Text style={[styles.smallText, { fontWeight: '600' }]}>{formData.model}</Text>
+              </View>
+              <View style={styles.formSummaryItem}>
+                <Text style={styles.smallText}>Año:</Text>
+                <Text style={[styles.smallText, { fontWeight: '600' }]}>{formData.year}</Text>
+              </View>
+              <View style={styles.formSummaryItem}>
+                <Text style={styles.smallText}>Kilometraje:</Text>
+                <Text style={[styles.smallText, { fontWeight: '600' }]}>
+                  {parseInt(formData.mileage || '0').toLocaleString()} km
+                </Text>
+              </View>
+            </View>
+          </View>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep < 4) {
+      console.log(`📍 Avanzando del paso ${currentStep} al ${currentStep + 1}`);
+      setCurrentStep(currentStep + 1);
+    } else {
+      console.log('📝 Enviando formulario...');
+      handleSubmit();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      console.log(`📍 Retrocediendo del paso ${currentStep} al ${currentStep - 1}`);
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 1: return !!formData.brand;
+      case 2: return !!formData.model && !!formData.year;
+      case 3: return !!formData.mileage;
+      case 4: return true;
+      default: return false;
+    }
+  };
+
+  return (
+    <ScrollView style={styles.registerContainer}>
+      {/* Header con navegación */}
+      <View style={styles.registerHeader}>
+        <TouchableOpacity onPress={() => {
+          if (currentStep === 1) {
+            onGoBack ? onGoBack() : setCurrentScreen('welcome');
+          } else {
+            handlePrevious();
+          }
+        }}>
+          <Ionicons name="arrow-back" size={24} color="#2563eb" />
+        </TouchableOpacity>
+        <Text style={styles.dashboardTitle}>Registrar Vehículo</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {/* Barra de progreso */}
+      <View style={styles.registerProgress}>
+        <View style={styles.registerProgressBar}>
+          <View 
+            style={[
+              styles.registerProgressFill, 
+              { width: `${(currentStep / 4) * 100}%` }
+            ]} 
+          />
+        </View>
+        <Text style={[styles.smallText, { textAlign: 'center', marginTop: 8 }]}>
+          Paso {currentStep} de 4
+        </Text>
+      </View>
+
+      {/* Contenido del paso */}
+      <View style={styles.registerCard}>
+        {renderStep()}
+
+        {/* Botones de navegación */}
+        <View style={styles.buttonRow}>
+          {currentStep > 1 && (
+            <TouchableOpacity
+              onPress={handlePrevious}
+              style={[styles.secondaryButton, { flex: 1 }]}
+            >
+              <Ionicons name="chevron-back" size={16} color="#374151" />
+              <Text style={[styles.secondaryButtonText, { marginLeft: 4 }]}>Anterior</Text>
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity
+            onPress={handleNext}
+            disabled={!isStepValid()}
+            style={[
+              styles.primaryButton,
+              { flex: 1, marginLeft: currentStep > 1 ? 12 : 0 },
+              !isStepValid() && styles.primaryButtonDisabled
+            ]}
+          >
+            <Text style={styles.primaryButtonText}>
+              {currentStep === 4 ? 'Registrar' : 'Siguiente'}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color="#ffffff" style={{ marginLeft: 4 }} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ScrollView>
+  );
+};
+
+/**
+ * Pantalla de dashboard con vehículos registrados
+ */
+const DashboardScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
+  const { 
+    vehicles, 
+    setCurrentScreen, 
+    canAddVehicle, 
+    deleteVehicle,
+    setSelectedVehicle,
+    setShowMileageModal
+  } = useFirstRegistration();
+
+  return (
+    <ScrollView style={styles.dashboardContainer}>
+      {/* Header */}
+      <View style={styles.dashboardHeader}>
+        {onGoBack && (
+          <TouchableOpacity onPress={onGoBack}>
+            <Ionicons name="arrow-back" size={24} color="#2563eb" />
+          </TouchableOpacity>
+        )}
+        <View style={{ flex: 1, marginLeft: onGoBack ? 16 : 0 }}>
+          <Text style={styles.dashboardTitle}>Mis Vehículos</Text>
+          <Text style={styles.dashboardSubtitle}>{vehicles.length} vehículo(s) registrado(s)</Text>
+        </View>
+      </View>
+
+      {/* Lista de vehículos */}
+      {vehicles.map((vehicle) => (
+        <View key={vehicle.id} style={styles.vehicleCard}>
+          <View style={styles.vehicleCardHeader}>
+            <View style={[styles.vehicleImage, { backgroundColor: vehicle.image }]}>
+              <Ionicons name="car-outline" size={24} color="#ffffff" />
+            </View>
+            <View style={styles.vehicleInfo}>
+              <Text style={styles.vehicleTitle}>{vehicle.brand} {vehicle.model}</Text>
+              <Text style={styles.vehicleSubtitle}>Año {vehicle.year}</Text>
+            </View>
+            <TouchableOpacity onPress={() => deleteVehicle(vehicle.id)}>
+              <Ionicons name="trash-outline" size={20} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.vehicleMileage}
+            onPress={() => {
+              setSelectedVehicle(vehicle);
+              setShowMileageModal(true);
+            }}
+          >
+            <Text style={styles.smallText}>
+              📊 {vehicle.mileage.toLocaleString()} km
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.vehicleActions}>
+            <TouchableOpacity 
+              style={styles.vehicleActionButton}
+              onPress={() => {
+                setSelectedVehicle(vehicle);
+                setCurrentScreen('maintenance');
+              }}
+            >
+              <Text style={styles.primaryButtonText}>Ver Mantenciones</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+
+      {/* Botón para agregar vehículo */}
+      {canAddVehicle() && (
+        <TouchableOpacity
+          onPress={() => setCurrentScreen('register')}
+          style={[styles.primaryButton, { marginTop: 16 }]}
+        >
+          <Ionicons name="add" size={20} color="#ffffff" />
+          <Text style={[styles.primaryButtonText, { marginLeft: 8 }]}>Agregar otro vehículo</Text>
+        </TouchableOpacity>
+      )}
+
+      {!canAddVehicle() && (
+        <View style={[styles.planStatusCard, { marginTop: 16 }]}>
+          <Text style={styles.planStatusText}>
+            Has alcanzado el límite de vehículos en tu plan gratuito.
+          </Text>
+          <Text style={styles.planStatusWarning}>
+            Actualiza a Premium para agregar vehículos ilimitados.
+          </Text>
+        </View>
+      )}
+    </ScrollView>
+  );
+};
+
+/**
  * Componente principal FirstRegistration
+ * CORREGIDO: Navegación completa implementada
  */
 const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack }) => {
   const { currentScreen, setCurrentScreen } = useFirstRegistration();
 
-  console.log('🎯 Pantalla actual:', currentScreen);
+  console.log('🎯 Pantalla actual en FirstRegistration:', currentScreen);
 
   const renderScreen = () => {
     console.log('🖥️ Renderizando pantalla:', currentScreen);
@@ -197,26 +540,30 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack }) => {
       case 'welcome':
         console.log('🏠 Renderizando WelcomeScreen');
         return <WelcomeScreen onGoBack={onGoBack} />;
+      
       case 'register':
-        console.log('📝 Renderizando pantalla de registro');
+        console.log('📝 Renderizando RegisterScreen');
+        return <RegisterScreen onGoBack={onGoBack} />;
+      
+      case 'dashboard':
+        console.log('📊 Renderizando DashboardScreen');
+        return <DashboardScreen onGoBack={onGoBack} />;
+      
+      case 'maintenance':
+        console.log('🔧 Renderizando MantenanceScreen');
         return (
-          <View style={styles.container}>
-            <Text style={styles.title}>Pantalla de Registro</Text>
-            <Text style={styles.bodyText}>¡Funciona! El botón navegó correctamente.</Text>
+          <View style={[styles.container, styles.alignCenter, styles.justifyCenter]}>
+            <Text style={styles.title}>Mantenimiento</Text>
+            <Text style={styles.bodyText}>Pantalla de mantenimiento en desarrollo</Text>
             <TouchableOpacity 
-              onPress={() => setCurrentScreen('welcome')}
+              onPress={() => setCurrentScreen('dashboard')}
               style={styles.secondaryButton}
             >
-              <Text style={styles.secondaryButtonText}>Volver a Welcome</Text>
+              <Text style={styles.secondaryButtonText}>Volver al Dashboard</Text>
             </TouchableOpacity>
           </View>
         );
-      case 'dashboard':
-        console.log('📊 Renderizando Dashboard');
-        return <Text style={styles.title}>Dashboard</Text>;
-      case 'maintenance':
-        console.log('🔧 Renderizando Mantenimiento');
-        return <Text style={styles.title}>Mantenimiento</Text>;
+      
       default:
         console.log('❓ Pantalla desconocida, mostrando Welcome por defecto');
         return <WelcomeScreen onGoBack={onGoBack} />;
