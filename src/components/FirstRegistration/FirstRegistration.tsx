@@ -13,6 +13,7 @@ import { firstRegistrationStyles as styles } from './firstRegistration.styles';
 
 interface FirstRegistrationProps {
   onGoBack?: () => void;
+  startWithForm?: boolean; // Nueva prop para iniciar directamente en el formulario
 }
 
 /**
@@ -250,7 +251,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
             <View>
               <Text style={styles.formLabel}>Modelo</Text>
               <TextInput
-                style={[styles.formInput, errors.model && styles.formInputError]}
+                style={[styles.formInput, errors.model ? styles.formInputError : null]}
                 value={formData.model}
                 onChangeText={(text) => setFormData({ ...formData, model: text })}
                 placeholder="Ej: Corolla, Focus, Civic..."
@@ -259,7 +260,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
 
               <Text style={styles.formLabel}>Año</Text>
               <TextInput
-                style={[styles.formInput, errors.year && styles.formInputError]}
+                style={[styles.formInput, errors.year ? styles.formInputError : null]}
                 value={formData.year}
                 onChangeText={(text) => setFormData({ ...formData, year: text })}
                 placeholder={`Ej: ${currentYear - 5}`}
@@ -284,7 +285,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
             <View>
               <Text style={styles.formLabel}>Kilometraje</Text>
               <TextInput
-                style={[styles.formInput, errors.mileage && styles.formInputError]}
+                style={[styles.formInput, errors.mileage ? styles.formInputError : null]}
                 value={formData.mileage}
                 onChangeText={(text) => setFormData({ ...formData, mileage: text })}
                 placeholder="Ej: 150000"
@@ -528,8 +529,16 @@ const DashboardScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
  * Componente principal FirstRegistration
  * CORREGIDO: Navegación completa implementada
  */
-const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack }) => {
+const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWithForm = false }) => {
   const { currentScreen, setCurrentScreen } = useFirstRegistration();
+
+  // Si startWithForm es true, iniciar directamente en el formulario
+  React.useEffect(() => {
+    if (startWithForm && currentScreen === 'welcome') {
+      console.log('🚀 Iniciando directamente en formulario de registro');
+      setCurrentScreen('register');
+    }
+  }, [startWithForm, currentScreen, setCurrentScreen]);
 
   console.log('🎯 Pantalla actual en FirstRegistration:', currentScreen);
 

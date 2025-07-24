@@ -415,8 +415,13 @@ const AutoMarketplaceOnboarding: React.FC = () => {
 
   // Mostrar FirstRegistration si está activo
   if (showFirstRegistration) {
-    console.log('🚀 Renderizando FirstRegistration');
-    return <FirstRegistration onGoBack={() => setShowFirstRegistration(false)} />;
+    console.log('🚀 Renderizando FirstRegistration con formulario directo');
+    return (
+      <FirstRegistration 
+        onGoBack={() => setShowFirstRegistration(false)} 
+        startWithForm={true} 
+      />
+    );
   }
 
   // Pantalla de registro si el onboarding fue completado (legacy)
