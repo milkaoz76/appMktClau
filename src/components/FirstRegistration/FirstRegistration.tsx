@@ -193,12 +193,12 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
     setCurrentStep, 
     formData, 
     setFormData, 
-    brands, 
+    popularBrands,
     currentYear, 
     errors, 
     validateForm, 
     handleSubmit,
-    setCurrentScreen 
+    setCurrentScreen
   } = useFirstRegistration();
 
   console.log('📝 RegisterScreen renderizada, step:', currentStep);
@@ -217,7 +217,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
             </View>
 
             <View style={styles.formGrid}>
-              {brands.map((brand) => (
+              {popularBrands.map((brand) => (
                 <TouchableOpacity
                   key={brand}
                   onPress={() => setFormData({ ...formData, brand })}
@@ -340,7 +340,8 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
       console.log(`📍 Avanzando del paso ${currentStep} al ${currentStep + 1}`);
       setCurrentStep(currentStep + 1);
     } else {
-      console.log('📝 Enviando formulario...');
+      console.log('📝 Paso 4 completado - Enviando formulario...');
+      console.log('📊 Datos del formulario:', formData);
       handleSubmit();
     }
   };
@@ -443,6 +444,9 @@ const DashboardScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
     setShowMileageModal
   } = useFirstRegistration();
 
+  console.log('📊 DashboardScreen renderizado con vehículos:', vehicles);
+  console.log('📈 Cantidad de vehículos en dashboard:', vehicles.length);
+
   return (
     <ScrollView style={styles.dashboardContainer}>
       {/* Header */}
@@ -530,7 +534,7 @@ const DashboardScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
  * CORREGIDO: Navegación completa implementada
  */
 const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWithForm = false }) => {
-  const { currentScreen, setCurrentScreen } = useFirstRegistration();
+  const { currentScreen, setCurrentScreen, currentStep, vehicles } = useFirstRegistration();
 
   // Si startWithForm es true, iniciar directamente en el formulario
   React.useEffect(() => {
@@ -544,6 +548,7 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
 
   const renderScreen = () => {
     console.log('🖥️ Renderizando pantalla:', currentScreen);
+    console.log('📊 Estado actual - currentStep:', currentStep, 'vehicles:', vehicles.length);
     
     switch (currentScreen) {
       case 'welcome':
@@ -555,7 +560,8 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
         return <RegisterScreen onGoBack={onGoBack} />;
       
       case 'dashboard':
-        console.log('📊 Renderizando DashboardScreen');
+        console.log('� Renderiozando DashboardScreen');
+        console.log('📋 Vehículos disponibles para dashboard:', vehicles.length);
         return <DashboardScreen onGoBack={onGoBack} />;
       
       case 'maintenance':
@@ -575,6 +581,8 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
       
       default:
         console.log('❓ Pantalla desconocida, mostrando Welcome por defecto');
+        console.log('❓ currentScreen recibido:', currentScreen, 'tipo:', typeof currentScreen);
+        console.log('❓ Casos válidos: welcome, register, dashboard, maintenance');
         return <WelcomeScreen onGoBack={onGoBack} />;
     }
   };

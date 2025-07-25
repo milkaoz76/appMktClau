@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Vehículos - AutoConnect</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #1d4ed8; }
+        .output { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug de Vehículos - AutoConnect</h1>
+    
+    <div class="debug-section">
+        <h2>📊 Estado Actual</h2>
+        <button onclick="checkStorage()">Verificar AsyncStorage</button>
+        <button onclick="checkAppState()">Verificar Estado de la App</button>
+        <div id="storage-output" class="output"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🧪 Acciones de Testing</h2>
+        <button onclick="addTestVehicle()">Agregar Vehículo de Prueba</button>
+        <button onclick="clearStorage()">Limpiar AsyncStorage</button>
+        <button onclick="reloadApp()">Recargar Aplicación</button>
+    </div>
+    
+    <div class="debug-section">
+        <h2>📋 Instrucciones</h2>
+        <ol>
+            <li>Abre la aplicación principal en otra pestaña: <a href="http://localhost:19006" target="_blank">http://localhost:19006</a></li>
+            <li>Completa el formulario de registro hasta el paso 4</li>
+            <li>Presiona "Registrar" y luego vuelve aquí</li>
+            <li>Usa "Verificar AsyncStorage" para ver si se guardó</li>
+            <li>Usa "Verificar Estado de la App" para ver el estado en memoria</li>
+        </ol>
+    </div>
+
+    <script>
+        function checkStorage() {
+            try {
+                const vehicles = localStorage.getItem('vehicles');
+                const parsed = vehicles ? JSON.parse(vehicles) : [];
+                
+                const output = document.getElementById('storage-output');
+                output.innerHTML = `
+                    <strong>🚗 Vehículos en AsyncStorage:</strong><br>
+                    ${vehicles || 'No hay vehículos guardados'}<br><br>
+                    <strong>📊 Cantidad:</strong> ${parsed.length}<br><br>
+                    <strong>📋 Lista:</strong><br>
+                    ${parsed.map(v => `- ${v.brand} ${v.model} (${v.year}) - ${v.mileage} km`).join('<br>') || 'Lista vacía'}
+                `;
+                
+                console.log('📊 Vehículos en AsyncStorage:', parsed);
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('storage-output').innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        function checkAppState() {
+            if (window.debugVehicles) {
+                const state = window.debugVehicles();
+                const output = document.getElementById('storage-output');
+                output.innerHTML = `
+                    <strong>🔍 Estado de la aplicación:</strong><br>
+                    <strong>Pantalla actual:</strong> ${state.currentScreen}<br>
+                    <strong>Vehículos en memoria:</strong> ${state.vehicles.length}<br>
+                    <strong>Datos del formulario:</strong> ${JSON.stringify(state.formData)}<br><br>
+                    <strong>Lista de vehículos:</strong><br>
+                    ${state.vehicles.map(v => `- ${v.brand} ${v.model} (${v.year})`).join('<br>') || 'No hay vehículos'}
+                `;
+                console.log('🔍 Estado de la app:', state);
+            } else {
+                document.getElementById('storage-output').innerHTML = '❌ La aplicación no está cargada o debugVehicles no está disponible';
+            }
+        }
+        
+        function addTestVehicle() {
+            try {
+                const testVehicle = {
+                    id: Date.now(),
+                    brand: 'Toyota',
+                    model: 'Corolla Test',
+                    year: 2023,
+                    mileage: 1000,
+                    image: 'bg-green-500'
+                };
+                
+                const existing = JSON.parse(localStorage.getItem('vehicles') || '[]');
+                existing.push(testVehicle);
+                localStorage.setItem('vehicles', JSON.stringify(existing));
+                
+                alert('✅ Vehículo de prueba agregado. Recarga la aplicación principal.');
+                checkStorage();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+        
+        function clearStorage() {
+            if (confirm('¿Estás seguro de que quieres limpiar todos los datos?')) {
+                localStorage.clear();
+                alert('🧹 AsyncStorage limpiado. Recarga la aplicación principal.');
+                checkStorage();
+            }
+        }
+        
+        function reloadApp() {
+            window.open('http://localhost:19006', '_blank');
+        }
+        
+        // Auto-ejecutar al cargar
+        window.onload = () => {
+            checkStorage();
+        };
+    </script>
+</body>
+</html>

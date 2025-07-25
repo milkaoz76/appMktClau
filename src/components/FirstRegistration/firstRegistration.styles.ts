@@ -70,6 +70,21 @@ interface FirstRegistrationStyles {
   formSummary: ViewStyle;
   formSummaryItem: ViewStyle;
   
+  // Búsqueda de marcas
+  searchContainer: ViewStyle;
+  searchInputContainer: ViewStyle;
+  searchInput: ViewStyle;
+  searchIcon: ViewStyle;
+  searchClearButton: ViewStyle;
+  searchResults: ViewStyle;
+  searchResultItem: ViewStyle;
+  searchResultItemActive: ViewStyle;
+  sectionTitle: TextStyle;
+  customBrandSection: ViewStyle;
+  customBrandText: TextStyle;
+  customBrandButton: ViewStyle;
+  customBrandButtonText: TextStyle;
+  
   // Botones
   primaryButton: ViewStyle;
   primaryButtonDisabled: ViewStyle;
@@ -374,6 +389,94 @@ export const firstRegistrationStyles = StyleSheet.create<FirstRegistrationStyles
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 4,
+  },
+
+  // Búsqueda de marcas
+  searchContainer: {
+    marginBottom: 24,
+  },
+  
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#374151',
+    marginLeft: 8,
+  },
+  
+  searchIcon: {
+    marginRight: 4,
+  },
+  
+  searchClearButton: {
+    padding: 4,
+  },
+  
+  searchResults: {
+    gap: 8,
+  },
+  
+  searchResultItem: {
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+  },
+  
+  searchResultItemActive: {
+    borderColor: '#2563eb',
+    backgroundColor: '#dbeafe',
+  },
+  
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 16,
+  },
+  
+  customBrandSection: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  
+  customBrandText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  
+  customBrandButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2563eb',
+  },
+  
+  customBrandButtonText: {
+    color: '#2563eb',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 8,
   },
 
   // Botones

@@ -62,9 +62,16 @@ export interface UseFirstRegistrationReturn {
   maintenanceHistory: MaintenanceHistory;
   
   // Datos estáticos
-  brands: string[];
+  popularBrands: string[];
+  allBrands: string[];
   currentYear: number;
   maintenancePlan: { [key: string]: MaintenanceTask[] };
+  
+  // Estado de búsqueda de marcas
+  brandSearch: string;
+  showCustomBrandModal: boolean;
+  customBrandName: string;
+  filteredBrands: string[];
   
   // Acciones de navegación
   setCurrentScreen: (screen: string) => void;
@@ -75,6 +82,13 @@ export interface UseFirstRegistrationReturn {
   setFormData: (data: FormData) => void;
   validateForm: () => boolean;
   handleSubmit: () => void;
+  
+  // Acciones de búsqueda de marcas
+  handleBrandSearch: (searchText: string) => void;
+  handleCustomBrand: () => Promise<void>;
+  setBrandSearch: (search: string) => void;
+  setShowCustomBrandModal: (show: boolean) => void;
+  setCustomBrandName: (name: string) => void;
   
   // Acciones de vehículos
   deleteVehicle: (id: number) => void;
@@ -95,10 +109,27 @@ export interface UseFirstRegistrationReturn {
 }
 
 export const useFirstRegistration = (): UseFirstRegistrationReturn => {
+  // ID único para debuggear múltiples instancias
+  const hookId = React.useRef(Math.random().toString(36).substr(2, 9));
+  
   // Estado principal del componente
   const [currentScreen, setCurrentScreen] = useState<string>('welcome');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+
+  // Debug: Log del estado de vehículos cuando cambia
+  React.useEffect(() => {
+    console.log('🚗 Estado de vehículos actualizado:', vehicles);
+    console.log('📊 Cantidad de vehículos:', vehicles.length);
+  }, [vehicles]);
+
+  // Debug: Log cuando cambia la pantalla actual
+  React.useEffect(() => {
+    console.log(`🔄 [${hookId.current}] Pantalla cambió a:`, currentScreen);
+    if (currentScreen === 'dashboard') {
+      console.log(`📊 [${hookId.current}] Forzando renderizado del dashboard...`);
+    }
+  }, [currentScreen]);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({
     brand: '',
@@ -112,11 +143,27 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
   const [newMileage, setNewMileage] = useState<string>('');
   const [maintenanceHistory, setMaintenanceHistory] = useState<MaintenanceHistory>({});
 
-  // Datos estáticos
-  const brands = [
-    'Toyota', 'Ford', 'Chevrolet', 'Nissan', 'Honda', 'Hyundai', 
-    'Volkswagen', 'BMW', 'Mercedes-Benz', 'Audi', 'Mazda', 'Kia'
+  // Datos estáticos - Base de datos expandida de marcas
+  const popularBrands = [
+    'Toyota', 'Ford', 'Chevrolet', 'Nissan', 'Honda', 
+    'Hyundai', 'Volkswagen', 'BMW', 'Mercedes-Benz', 'Audi'
   ];
+
+  const allBrands = [
+    'Acura', 'Alfa Romeo', 'Aston Martin', 'Audi', 'Bentley', 'BMW', 'Buick', 'Cadillac',
+    'Chevrolet', 'Chrysler', 'Citroën', 'Dacia', 'Daewoo', 'Daihatsu', 'Dodge', 'Ferrari',
+    'Fiat', 'Ford', 'Genesis', 'GMC', 'Honda', 'Hummer', 'Hyundai', 'Infiniti', 'Isuzu',
+    'Jaguar', 'Jeep', 'Kia', 'Lamborghini', 'Land Rover', 'Lexus', 'Lincoln', 'Lotus',
+    'Maserati', 'Mazda', 'McLaren', 'Mercedes-Benz', 'Mini', 'Mitsubishi', 'Nissan',
+    'Opel', 'Peugeot', 'Porsche', 'Ram', 'Renault', 'Rolls-Royce', 'Saab', 'Seat',
+    'Skoda', 'Smart', 'Subaru', 'Suzuki', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+  ];
+
+  // Estado para búsqueda de marcas
+  const [brandSearch, setBrandSearch] = useState<string>('');
+  const [showCustomBrandModal, setShowCustomBrandModal] = useState<boolean>(false);
+  const [customBrandName, setCustomBrandName] = useState<string>('');
+  const [filteredBrands, setFilteredBrands] = useState<string[]>([]);
 
   const currentYear = new Date().getFullYear();
 
@@ -408,7 +455,14 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
    * Maneja el envío del formulario
    */
   const handleSubmit = async (): Promise<void> => {
-    if (validateForm()) {
+    console.log('🔍 Iniciando handleSubmit...');
+    console.log('📝 Datos del formulario antes de validar:', formData);
+    
+    const isValid = validateForm();
+    console.log('✅ Resultado de validación:', isValid);
+    console.log('❌ Errores encontrados:', errors);
+    
+    if (isValid) {
       try {
         const newVehicle: Vehicle = {
           id: Date.now(),
@@ -420,17 +474,75 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
         };
         
         const updatedVehicles = [...vehicles, newVehicle];
-        setVehicles(updatedVehicles);
+        
+        console.log('🚗 Vehículo creado:', newVehicle);
+        console.log('📋 Lista actualizada de vehículos:', updatedVehicles);
+        
+        // PRIMERO navegar al dashboard
+        console.log(`🎯 [${hookId.current}] Navegando a dashboard...`);
+        setCurrentScreen('dashboard');
+        
+        // LUEGO limpiar el formulario
         setFormData({ brand: '', model: '', year: '', mileage: '' });
         setCurrentStep(1);
-        setCurrentScreen('dashboard');
         setErrors({});
         
+        // FINALMENTE actualizar vehículos y guardar
+        setVehicles(updatedVehicles);
         await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
         console.log(`✅ Vehículo registrado: ${newVehicle.brand} ${newVehicle.model}`);
+        
+        // Verificar que se guardó correctamente
+        const savedVehicles = await AsyncStorage.getItem('vehicles');
+        console.log('💾 Vehículos guardados en AsyncStorage:', savedVehicles);
       } catch (error) {
         console.error('❌ Error al registrar vehículo:', error);
       }
+    } else {
+      console.log('❌ Validación falló - no se puede registrar el vehículo');
+      console.log('📋 Errores de validación:', errors);
+      console.log('💡 Sugerencia: Verifica que todos los campos sean válidos');
+      console.log('📅 Año válido: 1900 - ' + currentYear);
+      console.log('🔢 Kilometraje: debe ser un número positivo');
+    }
+  };
+
+  /**
+   * Filtra marcas basado en la búsqueda
+   */
+  const handleBrandSearch = (searchText: string): void => {
+    setBrandSearch(searchText);
+    
+    // Evitar loops - solo filtrar si hay texto
+    if (searchText && searchText.trim().length > 0) {
+      const filtered = allBrands.filter(brand =>
+        brand.toLowerCase().includes(searchText.toLowerCase())
+      ).slice(0, 10); // Limitar a 10 resultados
+      setFilteredBrands(filtered);
+    } else {
+      setFilteredBrands([]);
+    }
+  };
+
+  /**
+   * Maneja la selección de marca personalizada
+   */
+  const handleCustomBrand = async (): Promise<void> => {
+    if (customBrandName.trim()) {
+      const trimmedName = customBrandName.trim();
+      
+      // Agregar a la lista de marcas si no existe
+      if (!allBrands.includes(trimmedName)) {
+        allBrands.push(trimmedName);
+        allBrands.sort();
+      }
+      
+      // Seleccionar la marca
+      setFormData({ ...formData, brand: trimmedName });
+      setCustomBrandName('');
+      setShowCustomBrandModal(false);
+      
+      console.log(`✅ Marca personalizada agregada: ${trimmedName}`);
     }
   };
 
@@ -472,6 +584,16 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
     // Esta función será sobrescrita por el componente padre
   };
 
+  // Función de debug para la consola
+  if (typeof window !== 'undefined') {
+    (window as any).debugVehicles = () => {
+      console.log('🔍 DEBUG - Estado actual de vehículos:', vehicles);
+      console.log('🔍 DEBUG - Pantalla actual:', currentScreen);
+      console.log('🔍 DEBUG - Datos del formulario:', formData);
+      return { vehicles, currentScreen, formData };
+    };
+  }
+
   return {
     // Estado
     currentScreen,
@@ -486,9 +608,16 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
     maintenanceHistory,
     
     // Datos estáticos
-    brands,
+    popularBrands,
+    allBrands,
     currentYear,
     maintenancePlan,
+    
+    // Estado de búsqueda de marcas
+    brandSearch,
+    showCustomBrandModal,
+    customBrandName,
+    filteredBrands,
     
     // Acciones de navegación
     setCurrentScreen,
@@ -499,6 +628,13 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
     setFormData,
     validateForm,
     handleSubmit,
+    
+    // Acciones de búsqueda de marcas
+    handleBrandSearch,
+    handleCustomBrand,
+    setBrandSearch,
+    setShowCustomBrandModal,
+    setCustomBrandName,
     
     // Acciones de vehículos
     deleteVehicle,
