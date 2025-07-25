@@ -1,12 +1,12 @@
 /**
- * Hook personalizado para la lógica de negocio del FirstRegistration
- * Maneja todo el estado, validaciones y eventos del componente de registro de vehículos
+ * Context para manejar el estado global del FirstRegistration
+ * Soluciona el problema de múltiples instancias del hook
  */
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
 
+// Interfaces y tipos
 export interface Vehicle {
   id: number;
   brand: string;
@@ -48,7 +48,8 @@ export interface MaintenanceHistory {
   };
 }
 
-export interface UseFirstRegistrationReturn {
+// Interfaz del contexto
+interface FirstRegistrationContextType {
   // Estado principal
   currentScreen: string;
   vehicles: Vehicle[];
@@ -108,28 +109,20 @@ export interface UseFirstRegistrationReturn {
   getVehicleImage: (brand: string) => string;
 }
 
-export const useFirstRegistration = (): UseFirstRegistrationReturn => {
+// Crear el contexto
+const FirstRegistrationContext = createContext<FirstRegistrationContextType | undefined>(undefined);
+
+// Provider del contexto
+export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // ID único para debuggear múltiples instancias
-  const hookId = React.useRef(Math.random().toString(36).substr(2, 9));
+  const contextId = useRef(`CONTEXT-${Math.random().toString(36).substr(2, 9)}`);
   
+  console.log(`🎯 [${contextId.current}] Inicializando FirstRegistrationProvider`);
+
   // Estado principal del componente
   const [currentScreen, setCurrentScreen] = useState<string>('welcome');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
-
-  // Debug: Log del estado de vehículos cuando cambia
-  React.useEffect(() => {
-    console.log('🚗 Estado de vehículos actualizado:', vehicles);
-    console.log('📊 Cantidad de vehículos:', vehicles.length);
-  }, [vehicles]);
-
-  // Debug: Log cuando cambia la pantalla actual
-  React.useEffect(() => {
-    console.log(`🔄 [${hookId.current}] Pantalla cambió a:`, currentScreen);
-    if (currentScreen === 'dashboard') {
-      console.log(`📊 [${hookId.current}] Forzando renderizado del dashboard...`);
-    }
-  }, [currentScreen]);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [formData, setFormData] = useState<FormData>({
     brand: '',
@@ -200,123 +193,34 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
         color: 'text-red-600', 
         bg: 'bg-red-100' 
       },
-      { 
-        id: 'filter_20k', 
-        name: 'Filtro de aire', 
-        icon: React.createElement(Ionicons, { name: 'funnel-outline', size: 16, color: '#16a34a' }),
-        color: 'text-green-600', 
-        bg: 'bg-green-100' 
-      },
-    ],
-    '30000': [
-      { 
-        id: 'oil_30k', 
-        name: 'Cambio de aceite', 
-        icon: React.createElement(Ionicons, { name: 'water-outline', size: 16, color: '#2563eb' }),
-        color: 'text-blue-600', 
-        bg: 'bg-blue-100' 
-      },
-      { 
-        id: 'spark_plugs_30k', 
-        name: 'Bujías', 
-        icon: React.createElement(Ionicons, { name: 'flash-outline', size: 16, color: '#ca8a04' }),
-        color: 'text-yellow-600', 
-        bg: 'bg-yellow-100' 
-      },
-      { 
-        id: 'brake_pads_30k', 
-        name: 'Pastillas de freno', 
-        icon: React.createElement(Ionicons, { name: 'disc-outline', size: 16, color: '#dc2626' }),
-        color: 'text-red-600', 
-        bg: 'bg-red-100' 
-      },
-    ],
-    '40000': [
-      { 
-        id: 'oil_40k', 
-        name: 'Cambio de aceite', 
-        icon: React.createElement(Ionicons, { name: 'water-outline', size: 16, color: '#2563eb' }),
-        color: 'text-blue-600', 
-        bg: 'bg-blue-100' 
-      },
-      { 
-        id: 'filter_40k', 
-        name: 'Filtro de aire', 
-        icon: React.createElement(Ionicons, { name: 'funnel-outline', size: 16, color: '#16a34a' }),
-        color: 'text-green-600', 
-        bg: 'bg-green-100' 
-      },
-      { 
-        id: 'coolant_40k', 
-        name: 'Refrigerante', 
-        icon: React.createElement(Ionicons, { name: 'water-outline', size: 16, color: '#0891b2' }),
-        color: 'text-cyan-600', 
-        bg: 'bg-cyan-100' 
-      },
-    ],
-    '50000': [
-      { 
-        id: 'oil_50k', 
-        name: 'Cambio de aceite', 
-        icon: React.createElement(Ionicons, { name: 'water-outline', size: 16, color: '#2563eb' }),
-        color: 'text-blue-600', 
-        bg: 'bg-blue-100' 
-      },
-      { 
-        id: 'brake_fluid_50k', 
-        name: 'Líquido de frenos', 
-        icon: React.createElement(Ionicons, { name: 'disc-outline', size: 16, color: '#dc2626' }),
-        color: 'text-red-600', 
-        bg: 'bg-red-100' 
-      },
-      { 
-        id: 'timing_belt_50k', 
-        name: 'Correa de distribución', 
-        icon: React.createElement(Ionicons, { name: 'settings-outline', size: 16, color: '#9333ea' }),
-        color: 'text-purple-600', 
-        bg: 'bg-purple-100' 
-      },
-    ],
-    '60000': [
-      { 
-        id: 'oil_60k', 
-        name: 'Cambio de aceite', 
-        icon: React.createElement(Ionicons, { name: 'water-outline', size: 16, color: '#2563eb' }),
-        color: 'text-blue-600', 
-        bg: 'bg-blue-100' 
-      },
-      { 
-        id: 'transmission_60k', 
-        name: 'Aceite transmisión', 
-        icon: React.createElement(Ionicons, { name: 'construct-outline', size: 16, color: '#ea580c' }),
-        color: 'text-orange-600', 
-        bg: 'bg-orange-100' 
-      },
-      { 
-        id: 'brake_pads_60k', 
-        name: 'Pastillas de freno', 
-        icon: React.createElement(Ionicons, { name: 'disc-outline', size: 16, color: '#dc2626' }),
-        color: 'text-red-600', 
-        bg: 'bg-red-100' 
-      },
     ],
   };
 
-  /**
-   * Efecto para cargar datos persistidos al inicializar
-   * CORREGIDO: Previene múltiples ejecuciones y maneja cleanup
-   */
+  // Debug: Log del estado de vehículos cuando cambia
+  useEffect(() => {
+    console.log(`🚗 [${contextId.current}] Estado de vehículos actualizado:`, vehicles);
+    console.log(`📊 [${contextId.current}] Cantidad de vehículos:`, vehicles.length);
+  }, [vehicles]);
+
+  // Debug: Log cuando cambia la pantalla actual
+  useEffect(() => {
+    console.log(`🔄 [${contextId.current}] Pantalla cambió a:`, currentScreen);
+    if (currentScreen === 'dashboard') {
+      console.log(`📊 [${contextId.current}] Forzando renderizado del dashboard...`);
+    }
+  }, [currentScreen]);
+
+  // Efecto para cargar datos persistidos al inicializar
   useEffect(() => {
     let isMounted = true;
-    let hasLoaded = false; // Prevenir múltiples cargas
+    let hasLoaded = false;
     
     const loadPersistedData = async () => {
-      // Prevenir múltiples ejecuciones
       if (hasLoaded || !isMounted) return;
       hasLoaded = true;
       
       try {
-        console.log('🔄 Cargando datos persistidos...');
+        console.log(`🔄 [${contextId.current}] Cargando datos persistidos...`);
         
         const [savedVehicles, savedMaintenanceHistory, savedUserPlan] = await Promise.all([
           AsyncStorage.getItem('vehicles'),
@@ -324,29 +228,27 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
           AsyncStorage.getItem('userPlan')
         ]);
         
-        // Solo actualizar si el componente sigue montado
         if (!isMounted) return;
         
         if (savedVehicles) {
           const parsedVehicles = JSON.parse(savedVehicles);
           setVehicles(parsedVehicles);
-          console.log(`✅ Cargados ${parsedVehicles.length} vehículos`);
+          console.log(`✅ [${contextId.current}] Cargados ${parsedVehicles.length} vehículos`);
         }
         
         if (savedMaintenanceHistory) {
           setMaintenanceHistory(JSON.parse(savedMaintenanceHistory));
-          console.log('✅ Historial de mantenimiento cargado');
+          console.log(`✅ [${contextId.current}] Historial de mantenimiento cargado`);
         }
         
         if (savedUserPlan) {
           setUserPlan(savedUserPlan);
-          console.log(`✅ Plan de usuario: ${savedUserPlan}`);
+          console.log(`✅ [${contextId.current}] Plan de usuario: ${savedUserPlan}`);
         }
         
-        console.log('✅ Carga de datos persistidos completada');
+        console.log(`✅ [${contextId.current}] Carga de datos persistidos completada`);
       } catch (error) {
-        console.error('❌ Error al cargar datos persistidos:', error);
-        // En caso de error, usar valores por defecto
+        console.error(`❌ [${contextId.current}] Error al cargar datos persistidos:`, error);
         if (isMounted) {
           setVehicles([]);
           setMaintenanceHistory({});
@@ -357,80 +259,44 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
 
     loadPersistedData();
     
-    // Cleanup function
     return () => {
       isMounted = false;
     };
   }, []);
 
-  /**
-   * Obtiene el estado de una tarea de mantenimiento
-   */
-  const getMaintenanceStatus = (vehicleId: number, mileage: number, taskId: string, milestone: string): string => {
-    const history = maintenanceHistory[vehicleId.toString()] || {};
-    if (history[taskId]) return 'completed';
+  // Filtra marcas basado en la búsqueda
+  const handleBrandSearch = (searchText: string): void => {
+    setBrandSearch(searchText);
     
-    const currentMileage = parseInt(mileage.toString());
-    const milestoneMileage = parseInt(milestone);
-    
-    if (currentMileage >= milestoneMileage) return 'due';
-    if (currentMileage >= milestoneMileage - 2000) return 'upcoming';
-    return 'pending';
-  };
-
-  /**
-   * Marca una tarea como completada
-   */
-  const markTaskCompleted = async (vehicleId: number, taskId: string): Promise<void> => {
-    try {
-      const updatedHistory = {
-        ...maintenanceHistory,
-        [vehicleId.toString()]: {
-          ...maintenanceHistory[vehicleId.toString()],
-          [taskId]: {
-            completed: true,
-            date: new Date().toISOString(),
-            mileage: selectedVehicle?.mileage || 0
-          }
-        }
-      };
-      
-      setMaintenanceHistory(updatedHistory);
-      await AsyncStorage.setItem('maintenanceHistory', JSON.stringify(updatedHistory));
-      console.log(`✅ Tarea ${taskId} marcada como completada para vehículo ${vehicleId}`);
-    } catch (error) {
-      console.error('❌ Error al marcar tarea como completada:', error);
+    if (searchText && searchText.trim().length > 0) {
+      const filtered = allBrands.filter(brand =>
+        brand.toLowerCase().includes(searchText.toLowerCase())
+      ).slice(0, 10);
+      setFilteredBrands(filtered);
+    } else {
+      setFilteredBrands([]);
     }
   };
 
-  /**
-   * Actualiza el kilometraje de un vehículo
-   */
-  const updateVehicleMileage = async (): Promise<void> => {
-    if (!newMileage || parseInt(newMileage) < 0 || !selectedVehicle) return;
-    
-    try {
-      const updatedVehicles = vehicles.map(v => 
-        v.id === selectedVehicle.id 
-          ? { ...v, mileage: parseInt(newMileage) }
-          : v
-      );
+  // Maneja la selección de marca personalizada
+  const handleCustomBrand = async (): Promise<void> => {
+    if (customBrandName.trim()) {
+      const trimmedName = customBrandName.trim();
       
-      setVehicles(updatedVehicles);
-      setSelectedVehicle({ ...selectedVehicle, mileage: parseInt(newMileage) });
-      setNewMileage('');
-      setShowMileageModal(false);
+      if (!allBrands.includes(trimmedName)) {
+        allBrands.push(trimmedName);
+        allBrands.sort();
+      }
       
-      await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-      console.log(`✅ Kilometraje actualizado para vehículo ${selectedVehicle.id}: ${newMileage} km`);
-    } catch (error) {
-      console.error('❌ Error al actualizar kilometraje:', error);
+      setFormData({ ...formData, brand: trimmedName });
+      setCustomBrandName('');
+      setShowCustomBrandModal(false);
+      
+      console.log(`✅ [${contextId.current}] Marca personalizada agregada: ${trimmedName}`);
     }
   };
 
-  /**
-   * Valida el formulario de registro
-   */
+  // Valida el formulario de registro
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     
@@ -451,16 +317,14 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Maneja el envío del formulario
-   */
+  // Maneja el envío del formulario
   const handleSubmit = async (): Promise<void> => {
-    console.log('🔍 Iniciando handleSubmit...');
-    console.log('📝 Datos del formulario antes de validar:', formData);
+    console.log(`🔍 [${contextId.current}] Iniciando handleSubmit...`);
+    console.log(`📝 [${contextId.current}] Datos del formulario antes de validar:`, formData);
     
     const isValid = validateForm();
-    console.log('✅ Resultado de validación:', isValid);
-    console.log('❌ Errores encontrados:', errors);
+    console.log(`✅ [${contextId.current}] Resultado de validación:`, isValid);
+    console.log(`❌ [${contextId.current}] Errores encontrados:`, errors);
     
     if (isValid) {
       try {
@@ -475,11 +339,11 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
         
         const updatedVehicles = [...vehicles, newVehicle];
         
-        console.log('🚗 Vehículo creado:', newVehicle);
-        console.log('📋 Lista actualizada de vehículos:', updatedVehicles);
+        console.log(`🚗 [${contextId.current}] Vehículo creado:`, newVehicle);
+        console.log(`📋 [${contextId.current}] Lista actualizada de vehículos:`, updatedVehicles);
         
         // PRIMERO navegar al dashboard
-        console.log(`🎯 [${hookId.current}] Navegando a dashboard...`);
+        console.log(`🎯 [${contextId.current}] Navegando a dashboard...`);
         setCurrentScreen('dashboard');
         
         // LUEGO limpiar el formulario
@@ -490,111 +354,121 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
         // FINALMENTE actualizar vehículos y guardar
         setVehicles(updatedVehicles);
         await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-        console.log(`✅ Vehículo registrado: ${newVehicle.brand} ${newVehicle.model}`);
+        console.log(`✅ [${contextId.current}] Vehículo registrado: ${newVehicle.brand} ${newVehicle.model}`);
         
         // Verificar que se guardó correctamente
         const savedVehicles = await AsyncStorage.getItem('vehicles');
-        console.log('💾 Vehículos guardados en AsyncStorage:', savedVehicles);
+        console.log(`💾 [${contextId.current}] Vehículos guardados en AsyncStorage:`, savedVehicles);
       } catch (error) {
-        console.error('❌ Error al registrar vehículo:', error);
+        console.error(`❌ [${contextId.current}] Error al registrar vehículo:`, error);
       }
     } else {
-      console.log('❌ Validación falló - no se puede registrar el vehículo');
-      console.log('📋 Errores de validación:', errors);
-      console.log('💡 Sugerencia: Verifica que todos los campos sean válidos');
-      console.log('📅 Año válido: 1900 - ' + currentYear);
-      console.log('🔢 Kilometraje: debe ser un número positivo');
+      console.log(`❌ [${contextId.current}] Validación falló - no se puede registrar el vehículo`);
+      console.log(`📋 [${contextId.current}] Errores de validación:`, errors);
+      console.log(`💡 [${contextId.current}] Sugerencia: Verifica que todos los campos sean válidos`);
+      console.log(`📅 [${contextId.current}] Año válido: 1900 - ${currentYear}`);
+      console.log(`🔢 [${contextId.current}] Kilometraje: debe ser un número positivo`);
     }
   };
 
-  /**
-   * Filtra marcas basado en la búsqueda
-   */
-  const handleBrandSearch = (searchText: string): void => {
-    setBrandSearch(searchText);
-    
-    // Evitar loops - solo filtrar si hay texto
-    if (searchText && searchText.trim().length > 0) {
-      const filtered = allBrands.filter(brand =>
-        brand.toLowerCase().includes(searchText.toLowerCase())
-      ).slice(0, 10); // Limitar a 10 resultados
-      setFilteredBrands(filtered);
-    } else {
-      setFilteredBrands([]);
-    }
-  };
-
-  /**
-   * Maneja la selección de marca personalizada
-   */
-  const handleCustomBrand = async (): Promise<void> => {
-    if (customBrandName.trim()) {
-      const trimmedName = customBrandName.trim();
-      
-      // Agregar a la lista de marcas si no existe
-      if (!allBrands.includes(trimmedName)) {
-        allBrands.push(trimmedName);
-        allBrands.sort();
-      }
-      
-      // Seleccionar la marca
-      setFormData({ ...formData, brand: trimmedName });
-      setCustomBrandName('');
-      setShowCustomBrandModal(false);
-      
-      console.log(`✅ Marca personalizada agregada: ${trimmedName}`);
-    }
-  };
-
-  /**
-   * Obtiene la imagen/color del vehículo basado en la marca
-   */
+  // Obtiene la imagen/color del vehículo basado en la marca
   const getVehicleImage = (brand: string): string => {
     const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'];
     return colors[brand.length % colors.length];
   };
 
-  /**
-   * Elimina un vehículo
-   */
+  // Elimina un vehículo
   const deleteVehicle = async (id: number): Promise<void> => {
     try {
       const updatedVehicles = vehicles.filter(v => v.id !== id);
       setVehicles(updatedVehicles);
       await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-      console.log(`✅ Vehículo ${id} eliminado`);
+      console.log(`✅ [${contextId.current}] Vehículo ${id} eliminado`);
     } catch (error) {
-      console.error('❌ Error al eliminar vehículo:', error);
+      console.error(`❌ [${contextId.current}] Error al eliminar vehículo:`, error);
     }
   };
 
-  /**
-   * Verifica si se puede agregar un vehículo
-   */
+  // Verifica si se puede agregar un vehículo
   const canAddVehicle = (): boolean => {
     return userPlan === 'premium' || vehicles.length < 2;
   };
 
-  /**
-   * Función para volver al WelcomeBanner
-   * Esta función será llamada desde el contexto padre
-   */
+  // Actualiza el kilometraje de un vehículo
+  const updateVehicleMileage = async (): Promise<void> => {
+    if (!newMileage || parseInt(newMileage) < 0 || !selectedVehicle) return;
+    
+    try {
+      const updatedVehicles = vehicles.map(v => 
+        v.id === selectedVehicle.id 
+          ? { ...v, mileage: parseInt(newMileage) }
+          : v
+      );
+      
+      setVehicles(updatedVehicles);
+      setSelectedVehicle({ ...selectedVehicle, mileage: parseInt(newMileage) });
+      setNewMileage('');
+      setShowMileageModal(false);
+      
+      await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+      console.log(`✅ [${contextId.current}] Kilometraje actualizado para vehículo ${selectedVehicle.id}: ${newMileage} km`);
+    } catch (error) {
+      console.error(`❌ [${contextId.current}] Error al actualizar kilometraje:`, error);
+    }
+  };
+
+  // Obtiene el estado de una tarea de mantenimiento
+  const getMaintenanceStatus = (vehicleId: number, mileage: number, taskId: string, milestone: string): string => {
+    const history = maintenanceHistory[vehicleId.toString()] || {};
+    if (history[taskId]) return 'completed';
+    
+    const currentMileage = parseInt(mileage.toString());
+    const milestoneMileage = parseInt(milestone);
+    
+    if (currentMileage >= milestoneMileage) return 'due';
+    if (currentMileage >= milestoneMileage - 2000) return 'upcoming';
+    return 'pending';
+  };
+
+  // Marca una tarea como completada
+  const markTaskCompleted = async (vehicleId: number, taskId: string): Promise<void> => {
+    try {
+      const updatedHistory = {
+        ...maintenanceHistory,
+        [vehicleId.toString()]: {
+          ...maintenanceHistory[vehicleId.toString()],
+          [taskId]: {
+            completed: true,
+            date: new Date().toISOString(),
+            mileage: selectedVehicle?.mileage || 0
+          }
+        }
+      };
+      
+      setMaintenanceHistory(updatedHistory);
+      await AsyncStorage.setItem('maintenanceHistory', JSON.stringify(updatedHistory));
+      console.log(`✅ [${contextId.current}] Tarea ${taskId} marcada como completada para vehículo ${vehicleId}`);
+    } catch (error) {
+      console.error(`❌ [${contextId.current}] Error al marcar tarea como completada:`, error);
+    }
+  };
+
+  // Función para volver al WelcomeBanner
   const goBackToWelcomeBanner = (): void => {
-    console.log('🔙 Regresando al WelcomeBanner');
-    // Esta función será sobrescrita por el componente padre
+    console.log(`🔙 [${contextId.current}] Regresando al WelcomeBanner`);
   };
 
   // Función de debug para la consola
   if (typeof window !== 'undefined') {
     (window as any).debugVehicles = () => {
-      console.log('🔍 DEBUG - Estado actual de vehículos:', vehicles);
-      console.log('🔍 DEBUG - Pantalla actual:', currentScreen);
-      console.log('🔍 DEBUG - Datos del formulario:', formData);
+      console.log(`🔍 [${contextId.current}] DEBUG - Estado actual de vehículos:`, vehicles);
+      console.log(`🔍 [${contextId.current}] DEBUG - Pantalla actual:`, currentScreen);
+      console.log(`🔍 [${contextId.current}] DEBUG - Datos del formulario:`, formData);
       return { vehicles, currentScreen, formData };
     };
   }
 
-  return {
+  const contextValue: FirstRegistrationContextType = {
     // Estado
     currentScreen,
     vehicles,
@@ -653,4 +527,19 @@ export const useFirstRegistration = (): UseFirstRegistrationReturn => {
     // Utilidades
     getVehicleImage,
   };
+
+  return (
+    <FirstRegistrationContext.Provider value={contextValue}>
+      {children}
+    </FirstRegistrationContext.Provider>
+  );
+};
+
+// Hook para usar el contexto
+export const useFirstRegistration = (): FirstRegistrationContextType => {
+  const context = useContext(FirstRegistrationContext);
+  if (context === undefined) {
+    throw new Error('useFirstRegistration debe ser usado dentro de FirstRegistrationProvider');
+  }
+  return context;
 };

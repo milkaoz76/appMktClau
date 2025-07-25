@@ -1,14 +1,22 @@
 /**
- * Barrel export para el componente FirstRegistration
- * Facilita las importaciones desde otros archivos
+ * Exportaciones organizadas del módulo FirstRegistration
+ * Punto de entrada único para el componente y sus utilidades
  */
+
+// Componente principal
 export { default } from './FirstRegistration';
-export { useFirstRegistration } from './useFirstRegistration';
+
+// Context y hook
+export { 
+  FirstRegistrationProvider, 
+  useFirstRegistration
+} from './FirstRegistrationContext';
+
+// Tipos e interfaces
 export type { 
-  UseFirstRegistrationReturn, 
-  Vehicle, 
-  FormData, 
-  FormErrors, 
-  MaintenanceTask, 
-  MaintenanceHistory 
-} from './useFirstRegistration';
+  Vehicle,
+  FormData,
+  FormErrors,
+  MaintenanceTask,
+  MaintenanceHistory
+} from './FirstRegistrationContext';

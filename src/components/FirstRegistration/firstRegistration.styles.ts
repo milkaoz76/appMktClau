@@ -229,11 +229,7 @@ export const firstRegistrationStyles = StyleSheet.create<FirstRegistrationStyles
   welcomeCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
+    ...createShadow(10, '#000', 0.25, 20, { width: 0, height: 10 }),
     padding: 32,
     marginBottom: 24,
   },
@@ -269,11 +265,7 @@ export const firstRegistrationStyles = StyleSheet.create<FirstRegistrationStyles
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    ...createShadow(1, '#000', 0.1, 2, { width: 0, height: 1 }),
   },
 
   // Pantalla de registro
@@ -305,11 +297,7 @@ export const firstRegistrationStyles = StyleSheet.create<FirstRegistrationStyles
   registerCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...createShadow(2, '#000', 0.1, 4, { width: 0, height: 2 }),
     padding: 24,
   },
   

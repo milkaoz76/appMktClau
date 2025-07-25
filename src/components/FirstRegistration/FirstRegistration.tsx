@@ -3,12 +3,13 @@
  * Maneja la interfaz de usuario del registro de vehículos y gestión de mantenimiento
  * Compatible con Expo Web, Android e iOS
  * CORREGIDO: Implementación completa del formulario de registro
+ * FIX: Eliminado key dinámico que causaba remontaje del componente
  */
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useFirstRegistration } from './useFirstRegistration';
+import { FirstRegistrationProvider, useFirstRegistration } from './FirstRegistrationContext';
 import { firstRegistrationStyles as styles } from './firstRegistration.styles';
 
 interface FirstRegistrationProps {
@@ -532,6 +533,7 @@ const DashboardScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
 /**
  * Componente principal FirstRegistration
  * CORREGIDO: Navegación completa implementada
+ * FIX: Eliminado key dinámico que causaba remontaje del componente
  */
 const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWithForm = false }) => {
   const { currentScreen, setCurrentScreen, currentStep, vehicles } = useFirstRegistration();
@@ -549,6 +551,7 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
   const renderScreen = () => {
     console.log('🖥️ Renderizando pantalla:', currentScreen);
     console.log('📊 Estado actual - currentStep:', currentStep, 'vehicles:', vehicles.length);
+    console.log('🔍 Tipo de currentScreen:', typeof currentScreen, 'Valor exacto:', JSON.stringify(currentScreen));
     
     switch (currentScreen) {
       case 'welcome':
@@ -560,7 +563,7 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
         return <RegisterScreen onGoBack={onGoBack} />;
       
       case 'dashboard':
-        console.log('� Renderiozando DashboardScreen');
+        console.log('📊 Renderizando DashboardScreen');
         console.log('📋 Vehículos disponibles para dashboard:', vehicles.length);
         return <DashboardScreen onGoBack={onGoBack} />;
       
@@ -587,6 +590,7 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
     }
   };
 
+  // FIX: Eliminado el key dinámico que causaba el remontaje del componente
   return (
     <View style={styles.container}>
       {renderScreen()}
@@ -595,4 +599,13 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
   );
 };
 
-export default FirstRegistration;
+// Componente envuelto con Provider
+const FirstRegistrationWithProvider: React.FC<FirstRegistrationProps> = (props) => {
+  return (
+    <FirstRegistrationProvider>
+      <FirstRegistration {...props} />
+    </FirstRegistrationProvider>
+  );
+};
+
+export default FirstRegistrationWithProvider;
