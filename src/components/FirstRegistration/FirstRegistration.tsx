@@ -93,6 +93,8 @@ const MileageModal: React.FC = () => {
   );
 };
 
+
+
 /**
  * Pantalla de bienvenida
  */
@@ -199,7 +201,11 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
     errors, 
     validateForm, 
     handleSubmit,
-    setCurrentScreen
+    setCurrentScreen,
+    brandSearch,
+    setBrandSearch,
+    filteredBrands,
+    handleBrandSearch
   } = useFirstRegistration();
 
   console.log('📝 RegisterScreen renderizada, step:', currentStep);
@@ -217,22 +223,102 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
               <Text style={styles.bodyText}>¿Cuál es la marca de tu vehículo?</Text>
             </View>
 
-            <View style={styles.formGrid}>
-              {popularBrands.map((brand) => (
-                <TouchableOpacity
-                  key={brand}
-                  onPress={() => setFormData({ ...formData, brand })}
-                  style={[
-                    styles.formBrandButton,
-                    formData.brand === brand && styles.formBrandButtonActive
-                  ]}
-                >
-                  <Text style={{ fontWeight: '500', color: formData.brand === brand ? '#2563eb' : '#6b7280' }}>
-                    {brand}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {/* Estado de marca seleccionada */}
+            {formData.brand ? (
+              <View style={styles.brandSelectedContainer}>
+                <View style={styles.brandSelectedContent}>
+                  <View style={styles.brandSelectedInfo}>
+                    <Ionicons name="checkmark-circle" size={24} color="#16a34a" />
+                    <View style={styles.brandSelectedText}>
+                      <Text style={styles.brandSelectedLabel}>Marca seleccionada:</Text>
+                      <Text style={styles.brandSelectedValue}>{formData.brand}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setFormData({ ...formData, brand: '' });
+                      setBrandSearch('');
+                      handleBrandSearch('');
+                    }}
+                    style={styles.changeBrandButton}
+                  >
+                    <Text style={styles.changeBrandButtonText}>Cambiar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <>
+                {/* Campo de búsqueda */}
+                <View style={styles.searchContainer}>
+                  <View style={styles.searchInputContainer}>
+                    <Ionicons name="search-outline" size={20} color="#6b7280" style={styles.searchIcon} />
+                    <TextInput
+                      style={styles.searchInput}
+                      value={brandSearch}
+                      onChangeText={handleBrandSearch}
+                      placeholder="Buscar marca..."
+                      placeholderTextColor="#9ca3af"
+                    />
+                    {brandSearch.length > 0 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setBrandSearch('');
+                          handleBrandSearch('');
+                        }}
+                        style={styles.searchClearButton}
+                      >
+                        <Ionicons name="close-circle" size={20} color="#6b7280" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+
+                {/* Lista de marcas en 2 columnas o resultados de búsqueda */}
+                {brandSearch.length > 0 ? (
+                  // Resultados de búsqueda en lista vertical
+                  <ScrollView style={styles.brandsList} showsVerticalScrollIndicator={false}>
+                    {filteredBrands.map((brand) => (
+                      <TouchableOpacity
+                        key={brand}
+                        onPress={() => {
+                          setFormData({ ...formData, brand });
+                          setBrandSearch('');
+                          handleBrandSearch('');
+                        }}
+                        style={styles.brandListItem}
+                      >
+                        <View style={styles.brandListItemContent}>
+                          <Text style={styles.brandListItemText}>{brand}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+
+                    {/* Mostrar mensaje si no hay resultados */}
+                    {filteredBrands.length === 0 && (
+                      <View style={styles.noResultsContainer}>
+                        <Text style={styles.noResultsText}>No se encontraron marcas</Text>
+                        <Text style={styles.noResultsSubtext}>Intenta con otro término de búsqueda</Text>
+                      </View>
+                    )}
+                  </ScrollView>
+                ) : (
+                  // Marcas populares en cuadrícula de 2 columnas
+                  <View style={styles.brandsGrid}>
+                    {popularBrands.map((brand) => (
+                      <TouchableOpacity
+                        key={brand}
+                        onPress={() => setFormData({ ...formData, brand })}
+                        style={styles.brandGridItem}
+                      >
+                        <Text style={styles.brandGridItemText}>{brand}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+
+              </>
+            )}
             
             {errors.brand && <Text style={styles.formError}>{errors.brand}</Text>}
           </View>

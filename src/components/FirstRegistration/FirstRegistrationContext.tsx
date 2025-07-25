@@ -138,8 +138,8 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
 
   // Datos estáticos - Base de datos expandida de marcas
   const popularBrands = [
-    'Toyota', 'Ford', 'Chevrolet', 'Nissan', 'Honda', 
-    'Hyundai', 'Volkswagen', 'BMW', 'Mercedes-Benz', 'Audi'
+    'BMW', 'Chevrolet', 'Ford', 'Hyundai', 'Kia', 
+    'Mazda', 'Nissan', 'Peugeot', 'Suzuki', 'Toyota'
   ];
 
   const allBrands = [

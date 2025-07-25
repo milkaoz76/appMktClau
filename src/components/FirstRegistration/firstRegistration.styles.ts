@@ -80,10 +80,32 @@ interface FirstRegistrationStyles {
   searchResultItem: ViewStyle;
   searchResultItemActive: ViewStyle;
   sectionTitle: TextStyle;
-  customBrandSection: ViewStyle;
-  customBrandText: TextStyle;
-  customBrandButton: ViewStyle;
-  customBrandButtonText: TextStyle;
+  
+  // Nuevos estilos para la lista de marcas
+  brandsList: ViewStyle;
+  brandListItem: ViewStyle;
+  brandListItemActive: ViewStyle;
+  brandListItemContent: ViewStyle;
+  brandListItemText: TextStyle;
+  brandListItemTextActive: TextStyle;
+  noResultsContainer: ViewStyle;
+  noResultsText: TextStyle;
+  noResultsSubtext: TextStyle;
+  
+  // Estilos para marca seleccionada
+  brandSelectedContainer: ViewStyle;
+  brandSelectedContent: ViewStyle;
+  brandSelectedInfo: ViewStyle;
+  brandSelectedText: ViewStyle;
+  brandSelectedLabel: TextStyle;
+  brandSelectedValue: TextStyle;
+  changeBrandButton: ViewStyle;
+  changeBrandButtonText: TextStyle;
+  
+  // Estilos para cuadrícula de marcas
+  brandsGrid: ViewStyle;
+  brandGridItem: ViewStyle;
+  brandGridItemText: TextStyle;
   
   // Botones
   primaryButton: ViewStyle;
@@ -434,37 +456,138 @@ export const firstRegistrationStyles = StyleSheet.create<FirstRegistrationStyles
     marginBottom: 16,
   },
   
-  customBrandSection: {
-    marginTop: 24,
+
+
+  // Nuevos estilos para la lista de marcas
+  brandsList: {
+    maxHeight: 300,
+    marginBottom: 16,
+  },
+
+  brandListItem: {
     padding: 16,
     backgroundColor: '#f9fafb',
     borderRadius: 12,
-    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    marginBottom: 8,
   },
-  
-  customBrandText: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 12,
-    textAlign: 'center',
+
+  brandListItemActive: {
+    borderColor: '#2563eb',
+    backgroundColor: '#dbeafe',
   },
-  
-  customBrandButton: {
+
+  brandListItemContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#2563eb',
+    justifyContent: 'space-between',
   },
-  
-  customBrandButtonText: {
+
+  brandListItemText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
+  },
+
+  brandListItemTextActive: {
     color: '#2563eb',
+  },
+
+  noResultsContainer: {
+    alignItems: 'center',
+    padding: 24,
+  },
+
+  noResultsText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+
+  noResultsSubtext: {
+    fontSize: 12,
+    color: '#9ca3af',
+    textAlign: 'center',
+  },
+
+  // Estilos para marca seleccionada
+  brandSelectedContainer: {
+    marginBottom: 24,
+  },
+
+  brandSelectedContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f0fdf4',
+    borderWidth: 2,
+    borderColor: '#16a34a',
+    borderRadius: 12,
+    padding: 16,
+  },
+
+  brandSelectedInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  brandSelectedText: {
+    marginLeft: 12,
+  },
+
+  brandSelectedLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 2,
+  },
+
+  brandSelectedValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#16a34a',
+  },
+
+  changeBrandButton: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+  },
+
+  changeBrandButtonText: {
+    color: '#374151',
     fontSize: 14,
     fontWeight: '500',
-    marginLeft: 8,
+  },
+
+  // Estilos para cuadrícula de marcas (2 columnas)
+  brandsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+
+  brandGridItem: {
+    width: '48%',
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+
+  brandGridItemText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#374151',
   },
 
   // Botones
