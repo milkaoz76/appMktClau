@@ -99,7 +99,7 @@ const MileageModal: React.FC = () => {
  * Pantalla de bienvenida
  */
 const WelcomeScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
-  const { setCurrentScreen } = useFirstRegistration();
+  const { setCurrentScreen, vehicles } = useFirstRegistration();
   
   console.log('🏠 WelcomeScreen renderizada, setCurrentScreen disponible:', !!setCurrentScreen);
 
@@ -157,9 +157,10 @@ const WelcomeScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
             </View>
           </View>
 
+          {/* Botón principal - Registrar vehículo */}
           <TouchableOpacity
             onPress={() => {
-              console.log('🚗 Botón "Registrar mi primer vehículo" presionado');
+              console.log('� Botbón "Registrar vehículo" presionado');
               console.log('🔄 Cambiando currentScreen de "welcome" a "register"');
               setCurrentScreen('register');
               console.log('✅ Navegación a pantalla de registro iniciada');
@@ -168,7 +169,23 @@ const WelcomeScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
           >
             <Ionicons name="add" size={20} color="#ffffff" />
             <Text style={[styles.primaryButtonText, { marginLeft: 8 }]}>
-              Registrar mi primer vehículo
+              Registrar vehículo
+            </Text>
+          </TouchableOpacity>
+
+          {/* Botón secundario - Ver listado de vehículos */}
+          <TouchableOpacity
+            onPress={() => {
+              console.log('📋 Botón "Ver listado de vehículos" presionado');
+              console.log('🔄 Cambiando currentScreen de "welcome" a "dashboard"');
+              setCurrentScreen('dashboard');
+              console.log('✅ Navegación a dashboard iniciada');
+            }}
+            style={[styles.secondaryButton, { marginTop: 12 }]}
+          >
+            <Ionicons name="list-outline" size={20} color="#374151" />
+            <Text style={[styles.secondaryButtonText, { marginLeft: 8 }]}>
+              Ver listado de vehículos
             </Text>
           </TouchableOpacity>
         </View>

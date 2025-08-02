@@ -48,7 +48,7 @@ Facilitar a los propietarios de vehículos el seguimiento de mantenciones, regis
   
   **Paso 2: Detalles del Vehículo**
   - Campo: Modelo (texto libre)
-  - Campo: Año (numérico, validado entre 1900 y año actual)
+  - Campo: Año (numérico, validado entre 1990 y año actual)
   - Validación en tiempo real
   - Navegación hacia atrás permitida
   
