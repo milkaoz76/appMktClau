@@ -15,6 +15,7 @@ import { firstRegistrationStyles as styles } from './firstRegistration.styles';
 interface FirstRegistrationProps {
   onGoBack?: () => void;
   startWithForm?: boolean; // Nueva prop para iniciar directamente en el formulario
+  onVehicleRegistered?: () => void; // Callback cuando se registra un vehículo exitosamente
 }
 
 /**
@@ -222,7 +223,11 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
     brandSearch,
     setBrandSearch,
     filteredBrands,
-    handleBrandSearch
+    handleBrandSearch,
+    handleModelChange,
+    handleYearChange,
+    handleMileageChange,
+    handleBrandChange
   } = useFirstRegistration();
 
   console.log('📝 RegisterScreen renderizada, step:', currentStep);
@@ -253,7 +258,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
                   </View>
                   <TouchableOpacity
                     onPress={() => {
-                      setFormData({ ...formData, brand: '' });
+                      handleBrandChange('');
                       setBrandSearch('');
                       handleBrandSearch('');
                     }}
@@ -298,7 +303,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
                       <TouchableOpacity
                         key={brand}
                         onPress={() => {
-                          setFormData({ ...formData, brand });
+                          handleBrandChange(brand);
                           setBrandSearch('');
                           handleBrandSearch('');
                         }}
@@ -324,7 +329,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
                     {popularBrands.map((brand) => (
                       <TouchableOpacity
                         key={brand}
-                        onPress={() => setFormData({ ...formData, brand })}
+                        onPress={() => handleBrandChange(brand)}
                         style={styles.brandGridItem}
                       >
                         <Text style={styles.brandGridItemText}>{brand}</Text>
@@ -357,7 +362,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
               <TextInput
                 style={[styles.formInput, errors.model ? styles.formInputError : null]}
                 value={formData.model}
-                onChangeText={(text) => setFormData({ ...formData, model: text })}
+                onChangeText={handleModelChange}
                 placeholder="Ej: Corolla, Focus, Civic..."
               />
               {errors.model && <Text style={styles.formError}>{errors.model}</Text>}
@@ -366,7 +371,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
               <TextInput
                 style={[styles.formInput, errors.year ? styles.formInputError : null]}
                 value={formData.year}
-                onChangeText={(text) => setFormData({ ...formData, year: text })}
+                onChangeText={handleYearChange}
                 placeholder={`Ej: ${currentYear - 5}`}
                 keyboardType="numeric"
               />
@@ -391,7 +396,7 @@ const RegisterScreen: React.FC<{ onGoBack?: () => void }> = ({ onGoBack }) => {
               <TextInput
                 style={[styles.formInput, errors.mileage ? styles.formInputError : null]}
                 value={formData.mileage}
-                onChangeText={(text) => setFormData({ ...formData, mileage: text })}
+                onChangeText={handleMileageChange}
                 placeholder="Ej: 150000"
                 keyboardType="numeric"
               />
@@ -705,7 +710,7 @@ const FirstRegistration: React.FC<FirstRegistrationProps> = ({ onGoBack, startWi
 // Componente envuelto con Provider
 const FirstRegistrationWithProvider: React.FC<FirstRegistrationProps> = (props) => {
   return (
-    <FirstRegistrationProvider>
+    <FirstRegistrationProvider onVehicleRegistered={props.onVehicleRegistered}>
       <FirstRegistration {...props} />
     </FirstRegistrationProvider>
   );

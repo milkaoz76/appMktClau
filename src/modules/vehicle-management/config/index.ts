@@ -4,6 +4,9 @@
  */
 import { ModuleConfig } from '../../../shared/types/module';
 import { VehicleModuleConfig } from '../types';
+import { VehicleListScreen } from '../screens/shared/VehicleListScreen';
+import { VehicleRegistrationScreen } from '../screens/shared/VehicleRegistrationScreen';
+import { VehicleDetailScreen } from '../screens/shared/VehicleDetailScreen';
 
 /**
  * Configuración específica del módulo de vehículos
@@ -48,7 +51,7 @@ export const vehicleModuleConfig: ModuleConfig = {
     shared: [
       {
         path: '/vehicles',
-        component: () => import('../screens/shared/VehicleListScreen').then(m => ({ default: m.VehicleListScreen })),
+        component: VehicleListScreen,
         exact: true,
         meta: {
           title: 'Mis Vehículos',
@@ -59,7 +62,7 @@ export const vehicleModuleConfig: ModuleConfig = {
       },
       {
         path: '/vehicles/register',
-        component: () => import('../screens/shared/VehicleRegistrationScreen').then(m => ({ default: m.VehicleRegistrationScreen })),
+        component: VehicleRegistrationScreen,
         exact: true,
         meta: {
           title: 'Registrar Vehículo',
@@ -70,7 +73,7 @@ export const vehicleModuleConfig: ModuleConfig = {
       },
       {
         path: '/vehicles/:id',
-        component: () => import('../screens/shared/VehicleDetailScreen').then(m => ({ default: m.VehicleDetailScreen })),
+        component: VehicleDetailScreen,
         exact: true,
         meta: {
           title: 'Detalle del Vehículo',
@@ -81,7 +84,7 @@ export const vehicleModuleConfig: ModuleConfig = {
       },
       {
         path: '/vehicles/:id/edit',
-        component: () => import('../screens/shared/VehicleRegistrationScreen').then(m => ({ default: m.VehicleRegistrationScreen })),
+        component: VehicleRegistrationScreen,
         exact: true,
         meta: {
           title: 'Editar Vehículo',

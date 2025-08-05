@@ -223,7 +223,7 @@ const findNavigationItem = (path: string, config: AdaptiveNavigationConfig) => {
     ...(config.web.sidebar?.items || [])
   ];
 
-  return allItems.find(item => item.path === path);
+  return allItems.find(item => 'path' in item && item.path === path);
 };
 
 export default NavigationProvider;

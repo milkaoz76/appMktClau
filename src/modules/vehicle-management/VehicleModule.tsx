@@ -28,8 +28,8 @@ export interface VehicleModuleProps {
   /** Callback cuando cambia la ruta */
   onRouteChange?: (route: string) => void;
   /** Props adicionales */
-  navigation?: any;
-  route?: any;
+  navigation?: object;
+  route?: object;
   children?: React.ReactNode;
 }
 

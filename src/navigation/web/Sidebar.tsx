@@ -206,8 +206,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Items de navegación */}
       <ScrollView style={styles.sidebarContent} showsVerticalScrollIndicator={false}>
         {config.items.map((item) => {
-          const isActive = currentRoute === item.path || 
-                          (item.submenu && item.submenu.some(sub => sub.path === currentRoute));
+          const isActive = !!(currentRoute === item.path || 
+                          (item.submenu && item.submenu.some(sub => sub.path === currentRoute)));
           const hasSubmenu = !!(item.submenu && item.submenu.length > 0);
           const isSubmenuOpen = openSubmenus.has(item.id);
 

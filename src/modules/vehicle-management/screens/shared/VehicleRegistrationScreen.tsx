@@ -2,12 +2,12 @@
  * VehicleRegistrationScreen - Pantalla de registro de vehículos
  * Migrado desde FirstRegistration con mejoras de arquitectura modular
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useVehicle } from '../../context/VehicleContext';
 import { useNavigation } from '../../../../navigation/NavigationContext';
-import { VehicleFormData, VehicleFormErrors } from '../../types';
+import { Vehicle, VehicleFormData, VehicleFormErrors } from '../../types';
 import { AdaptiveLayout } from '../../../../shared/components/AdaptiveLayout';
 import { createLogger } from '../../../../shared/utils/logger';
 import { VehicleRegistrationMobile } from '../../components/mobile/VehicleRegistrationMobile';
@@ -19,7 +19,8 @@ const vehicleLogger = createLogger('VehicleRegistration');
  * Props para VehicleRegistrationScreen
  */
 export interface VehicleRegistrationScreenProps {
-  onComplete?: (vehicle: any) => void;
+  vehicleId?: number;
+  onComplete?: (vehicle: Vehicle) => void;
   onCancel?: () => void;
   initialData?: Partial<VehicleFormData>;
 }
@@ -36,6 +37,7 @@ const POPULAR_BRANDS = [
  * Pantalla principal de registro de vehículos
  */
 export const VehicleRegistrationScreen: React.FC<VehicleRegistrationScreenProps> = ({
+  vehicleId,
   onComplete,
   onCancel,
   initialData = {}
@@ -183,8 +185,29 @@ export const VehicleRegistrationScreen: React.FC<VehicleRegistrationScreenProps>
     }
   }, [currentStep, formData]);
 
+  // Funciones optimizadas para evitar pérdida de foco
+  const handleFormDataChange = useCallback((newData: VehicleFormData) => {
+    setFormData(newData);
+  }, []);
+
+  const handleBrandChange = useCallback((brand: string) => {
+    setFormData(prev => ({ ...prev, brand }));
+  }, []);
+
+  const handleModelChange = useCallback((model: string) => {
+    setFormData(prev => ({ ...prev, model }));
+  }, []);
+
+  const handleYearChange = useCallback((year: string) => {
+    setFormData(prev => ({ ...prev, year }));
+  }, []);
+
+  const handleMileageChange = useCallback((mileage: string) => {
+    setFormData(prev => ({ ...prev, mileage }));
+  }, []);
+
   // Props compartidas para ambas versiones
-  const sharedProps = {
+  const sharedProps = useMemo(() => ({
     currentStep,
     formData,
     errors,
@@ -195,13 +218,36 @@ export const VehicleRegistrationScreen: React.FC<VehicleRegistrationScreenProps>
     currentYear,
     isStepValid: isStepValid(),
     onStepChange: setCurrentStep,
-    onFormDataChange: setFormData,
+    onFormDataChange: handleFormDataChange,
+    onBrandChange: handleBrandChange,
+    onModelChange: handleModelChange,
+    onYearChange: handleYearChange,
+    onMileageChange: handleMileageChange,
     onBrandSearch: handleBrandSearch,
     onNext: handleNext,
     onPrevious: handlePrevious,
     onCancel: handleCancel,
     onSubmit: handleSubmit
-  };
+  }), [
+    currentStep,
+    formData,
+    errors,
+    loading,
+    brandSearch,
+    filteredBrands,
+    currentYear,
+    isStepValid(),
+    handleFormDataChange,
+    handleBrandChange,
+    handleModelChange,
+    handleYearChange,
+    handleMileageChange,
+    handleBrandSearch,
+    handleNext,
+    handlePrevious,
+    handleCancel,
+    handleSubmit
+  ]);
 
   return (
     <AdaptiveLayout

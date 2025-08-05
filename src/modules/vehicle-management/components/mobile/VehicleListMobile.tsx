@@ -113,7 +113,16 @@ export const VehicleListMobile: React.FC<VehicleListMobileProps> = ({
   onDeleteVehicle,
   onRefresh
 }) => {
-  // Si no hay vehículos, mostrar estado vacío
+  // Si está cargando, mostrar spinner
+  if (loading && vehicles.length === 0) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={styles.headerTitle}>Cargando vehículos...</Text>
+      </View>
+    );
+  }
+
+  // Si no hay vehículos y no está cargando, mostrar estado vacío
   if (vehicles.length === 0 && !loading) {
     return (
       <View style={styles.container}>

@@ -19,6 +19,7 @@ const vehicleLogger = createLogger('VehicleList');
  * Props para VehicleListScreen
  */
 export interface VehicleListScreenProps {
+  initialFilter?: Partial<VehicleFilter>;
   onVehicleSelect?: (vehicle: Vehicle) => void;
   onAddVehicle?: () => void;
   showAddButton?: boolean;
@@ -28,6 +29,7 @@ export interface VehicleListScreenProps {
  * Pantalla principal de lista de vehículos
  */
 export const VehicleListScreen: React.FC<VehicleListScreenProps> = ({
+  initialFilter,
   onVehicleSelect,
   onAddVehicle,
   showAddButton = true
@@ -82,6 +84,11 @@ export const VehicleListScreen: React.FC<VehicleListScreenProps> = ({
     filtered.sort((a, b) => {
       const aValue = a[sort.field];
       const bValue = b[sort.field];
+      
+      // Manejar valores undefined
+      if (aValue === undefined && bValue === undefined) return 0;
+      if (aValue === undefined) return 1;
+      if (bValue === undefined) return -1;
       
       let comparison = 0;
       if (aValue < bValue) comparison = -1;

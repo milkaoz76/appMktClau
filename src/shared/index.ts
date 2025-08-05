@@ -5,6 +5,10 @@
 
 // Hooks
 export * from './hooks/useResponsive';
+export * from './hooks/useAppInitialization';
+
+// Services
+export * from './services/StorageService';
 
 // Componentes
 export * from './components/AdaptiveLayout';

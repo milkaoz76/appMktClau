@@ -139,7 +139,7 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
           setShowWelcomeBanner(true);
         }
       } catch (error) {
-        console.error('❌ Error al verificar estado del onboarding:', error);
+        // Error manejado silenciosamente para evitar interrumpir la experiencia del usuario
         // En caso de error, mostrar onboarding por defecto
         if (isMounted) {
           setShowOnboarding(true);
@@ -196,7 +196,7 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
       setShowFirstRegistration(false);  // CORREGIDO: No navegar directo a FirstRegistration
       setIsCompleted(false);
     } catch (error) {
-      console.error('❌ Error al guardar estado de onboarding omitido:', error);
+      // Error manejado silenciosamente
     }
   };
 
@@ -220,7 +220,7 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
       
       console.log('✅ Onboarding completado - navegando a app principal');
     } catch (error) {
-      console.error('❌ Error al guardar estado de onboarding completado:', error);
+      // Error manejado silenciosamente
     }
   };
 
@@ -245,7 +245,7 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
       await AsyncStorage.setItem('welcome_banner_dismissed', 'true');
       setShowWelcomeBanner(false);
     } catch (error) {
-      console.error('❌ Error al guardar estado del banner:', error);
+      // Error manejado silenciosamente
     }
   };
 
@@ -299,7 +299,7 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
       
       console.log('✅ Todos los datos limpiados - aplicación reseteada');
     } catch (error) {
-      console.error('❌ Error al limpiar datos:', error);
+      // Error manejado silenciosamente
     }
   };
 
@@ -320,7 +320,7 @@ export const useWelcomeBanner = (): UseWelcomeBannerReturn => {
       
       console.log('✅ Onboarding será mostrado en próxima carga');
     } catch (error) {
-      console.error('❌ Error al configurar onboarding forzado:', error);
+      // Error manejado silenciosamente
     }
   };
 

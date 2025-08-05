@@ -23,6 +23,10 @@ export interface VehicleRegistrationMobileProps {
   isStepValid: boolean;
   onStepChange: (step: number) => void;
   onFormDataChange: (data: VehicleFormData) => void;
+  onBrandChange?: (brand: string) => void;
+  onModelChange?: (model: string) => void;
+  onYearChange?: (year: string) => void;
+  onMileageChange?: (mileage: string) => void;
   onBrandSearch: (search: string) => void;
   onNext: () => void;
   onPrevious: () => void;
@@ -44,6 +48,10 @@ export const VehicleRegistrationMobile: React.FC<VehicleRegistrationMobileProps>
   currentYear,
   isStepValid,
   onFormDataChange,
+  onBrandChange,
+  onModelChange,
+  onYearChange,
+  onMileageChange,
   onBrandSearch,
   onNext,
   onPrevious,
@@ -117,7 +125,11 @@ export const VehicleRegistrationMobile: React.FC<VehicleRegistrationMobileProps>
                       <TouchableOpacity
                         key={brand}
                         onPress={() => {
-                          onFormDataChange({ ...formData, brand });
+                          if (onBrandChange) {
+                            onBrandChange(brand);
+                          } else {
+                            onFormDataChange({ ...formData, brand });
+                          }
                           onBrandSearch('');
                         }}
                         style={styles.brandListItem}
@@ -170,7 +182,7 @@ export const VehicleRegistrationMobile: React.FC<VehicleRegistrationMobileProps>
               <TextInput
                 style={[styles.formInput, errors.model ? styles.formInputError : null]}
                 value={formData.model}
-                onChangeText={(text) => onFormDataChange({ ...formData, model: text })}
+                onChangeText={onModelChange || ((text) => onFormDataChange({ ...formData, model: text }))}
                 placeholder="Ej: Corolla, Focus, Civic..."
               />
               {errors.model && <Text style={styles.errorText}>{errors.model}</Text>}
@@ -179,7 +191,7 @@ export const VehicleRegistrationMobile: React.FC<VehicleRegistrationMobileProps>
               <TextInput
                 style={[styles.formInput, errors.year ? styles.formInputError : null]}
                 value={formData.year}
-                onChangeText={(text) => onFormDataChange({ ...formData, year: text })}
+                onChangeText={onYearChange || ((text) => onFormDataChange({ ...formData, year: text }))}
                 placeholder={`Ej: ${currentYear - 5}`}
                 keyboardType="numeric"
               />
@@ -204,7 +216,7 @@ export const VehicleRegistrationMobile: React.FC<VehicleRegistrationMobileProps>
               <TextInput
                 style={[styles.formInput, errors.mileage ? styles.formInputError : null]}
                 value={formData.mileage}
-                onChangeText={(text) => onFormDataChange({ ...formData, mileage: text })}
+                onChangeText={onMileageChange || ((text) => onFormDataChange({ ...formData, mileage: text }))}
                 placeholder="Ej: 150000"
                 keyboardType="numeric"
               />

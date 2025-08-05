@@ -2,22 +2,23 @@
  * MobileNavigation - Navegación específica para dispositivos móviles
  * Implementa Bottom Tabs con Stack Navigation
  */
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useNavigation } from '../NavigationContext';
 import { navigationLogger } from '../../shared/utils/logger';
 import { BottomTabs } from './BottomTabs';
 import { MobileStackNavigator } from './MobileStackNavigator';
-import { TabConfig } from '../../shared/types/navigation';
+import { TabConfig, NavigationConfig } from '../../shared/types/navigation';
+import { RouterConfig } from '../../shared/types/route';
 
 /**
  * Props para MobileNavigation
  */
 export interface MobileNavigationProps {
-  config: any; // Configuración mobile específica
+  config: { tabs?: TabConfig[] };
   onRouteChange?: (route: string) => void;
   children?: React.ReactNode;
-  routerConfig?: any;
+  routerConfig?: RouterConfig;
 }
 
 /**
@@ -81,25 +82,36 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   const activeTab = useMemo(() => {
     // Intentar determinar el tab activo basado en la ruta actual
     const currentPath = state.currentRoute;
+    
+    // Si la ruta es '/', el tab activo es 'home'
+    if (currentPath === '/') {
+      return tabs.find((tab: any) => tab.id === 'home') || tabs[0];
+    }
+    
     const pathSegments = currentPath.split('/').filter(Boolean);
     const firstSegment = pathSegments[0] || 'home';
     
     // Buscar el tab que corresponde a la ruta
-    const tabFromRoute = tabs.find(tab => tab.id === firstSegment);
+    const tabFromRoute = tabs.find((tab: any) => tab.id === firstSegment);
     
     // Si no se encuentra, usar el tab activo del estado o el primero
-    return tabFromRoute || tabs.find(tab => tab.id === state.activeTab) || tabs[0];
+    return tabFromRoute || tabs.find((tab: any) => tab.id === state.activeTab) || tabs[0];
   }, [tabs, state.activeTab, state.currentRoute]);
 
   // Sincronizar tab activo con la ruta
-  useMemo(() => {
+  useEffect(() => {
     const currentPath = state.currentRoute;
-    const pathSegments = currentPath.split('/').filter(Boolean);
-    const firstSegment = pathSegments[0] || 'home';
+    
+    // Determinar qué tab debería estar activo
+    let expectedTab = 'home';
+    if (currentPath !== '/') {
+      const pathSegments = currentPath.split('/').filter(Boolean);
+      expectedTab = pathSegments[0] || 'home';
+    }
     
     // Si el tab activo no coincide con la ruta, actualizarlo
-    if (state.activeTab !== firstSegment && tabs.find(tab => tab.id === firstSegment)) {
-      setState({ activeTab: firstSegment });
+    if (state.activeTab !== expectedTab && tabs.find((tab: any) => tab.id === expectedTab)) {
+      setState({ activeTab: expectedTab });
     }
   }, [state.currentRoute, state.activeTab, tabs, setState]);
 
@@ -123,7 +135,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
     });
 
     // Navegar a la ruta del tab
-    const tabPath = `/${tabId}`;
+    const tabPath = tabId === 'home' ? '/' : `/${tabId}`;
     navigate(tabPath);
     
     // Notificar cambio de ruta

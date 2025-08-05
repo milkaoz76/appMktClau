@@ -1,25 +1,134 @@
 /**
- * HomeScreen - Pantalla temporal de inicio
- * Componente temporal hasta implementar el dashboard completo
+ * HomeScreen - Pantalla principal de inicio
+ * Pantalla principal que se muestra después del onboarding
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '../../navigation/NavigationContext';
 import { useVehicle } from '../../modules/vehicle-management';
 import { AdaptiveLayout } from '../../shared/components/AdaptiveLayout';
+import { StorageService } from '../../shared/services/StorageService';
+
+interface HomeScreenProps {
+  showWelcomeBanner?: boolean;
+  onDismissWelcomeBanner?: () => void;
+}
+
+/**
+ * Banner de bienvenida opcional
+ */
+const WelcomeBanner: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => (
+  <LinearGradient
+    colors={['#eff6ff', '#e0e7ff']}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 0 }}
+    style={{
+      marginHorizontal: 20,
+      marginTop: 20,
+      borderRadius: 12,
+      padding: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3
+    }}
+  >
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#2563eb',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12
+      }}>
+        <Ionicons name="car-outline" size={20} color="#ffffff" />
+      </View>
+      
+      <View style={{ flex: 1 }}>
+        <Text style={{
+          fontSize: 16,
+          fontWeight: '600',
+          color: '#1f2937',
+          marginBottom: 4
+        }}>
+          ¡Bienvenido a AutoConnect!
+        </Text>
+        <Text style={{
+          fontSize: 14,
+          color: '#6b7280'
+        }}>
+          ¿Te gustaría conocer todas las funciones disponibles?
+        </Text>
+      </View>
+      
+      <TouchableOpacity
+        onPress={onDismiss}
+        style={{
+          padding: 8,
+          borderRadius: 20,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)'
+        }}
+      >
+        <Ionicons name="close" size={16} color="#6b7280" />
+      </TouchableOpacity>
+    </View>
+  </LinearGradient>
+);
 
 /**
  * Componente de inicio mobile
  */
-const HomeScreenMobile: React.FC = () => {
-  const { navigate } = useNavigation();
+const HomeScreenMobile: React.FC<HomeScreenProps> = ({ 
+  showWelcomeBanner: propShowWelcomeBanner = false, 
+  onDismissWelcomeBanner: propOnDismissWelcomeBanner 
+}) => {
+  const { navigate, state } = useNavigation();
   const { vehicles, getVehicleCount } = useVehicle();
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
 
   const vehicleCount = getVehicleCount();
 
+  // Verificar si debemos mostrar el banner basado en el estado guardado
+  useEffect(() => {
+    const checkBannerState = async () => {
+      try {
+        const onboardingState = await StorageService.getOnboardingState();
+        const bannerDismissed = await StorageService.isWelcomeBannerDismissed();
+        
+        // Mostrar banner si el onboarding fue saltado y el banner no fue cerrado
+        const shouldShow = onboardingState.skipped && !bannerDismissed;
+        setShowWelcomeBanner(shouldShow);
+      } catch (error) {
+        console.error('Error checking banner state:', error);
+        setShowWelcomeBanner(false);
+      }
+    };
+
+    checkBannerState();
+  }, []);
+
+  // Función para cerrar el banner
+  const handleDismissBanner = async () => {
+    try {
+      await StorageService.dismissWelcomeBanner();
+      setShowWelcomeBanner(false);
+    } catch (error) {
+      console.error('Error dismissing banner:', error);
+    }
+  };
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+      {/* Banner de bienvenida condicional */}
+      {showWelcomeBanner && (
+        <WelcomeBanner onDismiss={handleDismissBanner} />
+      )}
+
       <View style={{ padding: 20 }}>
         {/* Header */}
         <View style={{ marginBottom: 24 }}>
@@ -242,18 +351,18 @@ const HomeScreenMobile: React.FC = () => {
 /**
  * Componente de inicio web (similar al mobile por ahora)
  */
-const HomeScreenWeb: React.FC = () => {
-  return <HomeScreenMobile />;
+const HomeScreenWeb: React.FC<HomeScreenProps> = (props) => {
+  return <HomeScreenMobile {...props} />;
 };
 
 /**
  * Pantalla principal de inicio
  */
-export const HomeScreen: React.FC = () => {
+export const HomeScreen: React.FC<HomeScreenProps> = (props) => {
   return (
     <AdaptiveLayout
-      mobile={() => <HomeScreenMobile />}
-      desktop={() => <HomeScreenWeb />}
+      mobile={() => <HomeScreenMobile {...props} />}
+      desktop={() => <HomeScreenWeb {...props} />}
     />
   );
 };

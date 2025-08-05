@@ -2,7 +2,7 @@
  * Context para manejar el estado global del FirstRegistration
  * Soluciona el problema de múltiples instancias del hook
  */
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -83,6 +83,10 @@ interface FirstRegistrationContextType {
   setFormData: (data: FormData) => void;
   validateForm: () => boolean;
   handleSubmit: () => void;
+  handleModelChange: (text: string) => void;
+  handleYearChange: (text: string) => void;
+  handleMileageChange: (text: string) => void;
+  handleBrandChange: (brand: string) => void;
   
   // Acciones de búsqueda de marcas
   handleBrandSearch: (searchText: string) => void;
@@ -113,9 +117,12 @@ interface FirstRegistrationContextType {
 const FirstRegistrationContext = createContext<FirstRegistrationContextType | undefined>(undefined);
 
 // Provider del contexto
-export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const FirstRegistrationProvider: React.FC<{ 
+  children: React.ReactNode;
+  onVehicleRegistered?: () => void;
+}> = ({ children, onVehicleRegistered }) => {
   // ID único para debuggear múltiples instancias
-  const contextId = useRef(`CONTEXT-${Math.random().toString(36).substr(2, 9)}`);
+  const contextId = useRef(`CONTEXT-${Math.random().toString(36).substring(2, 9)}`);
   
   console.log(`🎯 [${contextId.current}] Inicializando FirstRegistrationProvider`);
 
@@ -194,6 +201,12 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
         bg: 'bg-red-100' 
       },
     ],
+  };
+
+  // Obtiene la imagen/color del vehículo basado en la marca
+  const getVehicleImage = (brand: string): string => {
+    const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'];
+    return colors[brand.length % colors.length];
   };
 
   // Debug: Log del estado de vehículos cuando cambia
@@ -317,6 +330,23 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
     return Object.keys(newErrors).length === 0;
   };
 
+  // Funciones optimizadas para los TextInput
+  const handleModelChange = useCallback((text: string) => {
+    setFormData(prev => ({ ...prev, model: text }));
+  }, []);
+
+  const handleYearChange = useCallback((text: string) => {
+    setFormData(prev => ({ ...prev, year: text }));
+  }, []);
+
+  const handleMileageChange = useCallback((text: string) => {
+    setFormData(prev => ({ ...prev, mileage: text }));
+  }, []);
+
+  const handleBrandChange = useCallback((brand: string) => {
+    setFormData(prev => ({ ...prev, brand }));
+  }, []);
+
   // Maneja el envío del formulario
   const handleSubmit = async (): Promise<void> => {
     console.log(`🔍 [${contextId.current}] Iniciando handleSubmit...`);
@@ -342,23 +372,26 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
         console.log(`🚗 [${contextId.current}] Vehículo creado:`, newVehicle);
         console.log(`📋 [${contextId.current}] Lista actualizada de vehículos:`, updatedVehicles);
         
-        // PRIMERO navegar al dashboard
-        console.log(`🎯 [${contextId.current}] Navegando a dashboard...`);
-        setCurrentScreen('dashboard');
+        // PRIMERO actualizar vehículos y guardar
+        setVehicles(updatedVehicles);
+        await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
+        console.log(`✅ [${contextId.current}] Vehículo registrado: ${newVehicle.brand} ${newVehicle.model}`);
         
         // LUEGO limpiar el formulario
         setFormData({ brand: '', model: '', year: '', mileage: '' });
         setCurrentStep(1);
         setErrors({});
         
-        // FINALMENTE actualizar vehículos y guardar
-        setVehicles(updatedVehicles);
-        await AsyncStorage.setItem('vehicles', JSON.stringify(updatedVehicles));
-        console.log(`✅ [${contextId.current}] Vehículo registrado: ${newVehicle.brand} ${newVehicle.model}`);
-        
         // Verificar que se guardó correctamente
         const savedVehicles = await AsyncStorage.getItem('vehicles');
         console.log(`💾 [${contextId.current}] Vehículos guardados en AsyncStorage:`, savedVehicles);
+        
+        // FINALMENTE llamar al callback si existe
+        if (onVehicleRegistered) {
+          console.log(`🔄 [${contextId.current}] Llamando callback onVehicleRegistered`);
+          // Llamar inmediatamente sin setTimeout para evitar problemas de timing
+          onVehicleRegistered();
+        }
       } catch (error) {
         console.error(`❌ [${contextId.current}] Error al registrar vehículo:`, error);
       }
@@ -369,12 +402,6 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
       console.log(`📅 [${contextId.current}] Año válido: 1900 - ${currentYear}`);
       console.log(`🔢 [${contextId.current}] Kilometraje: debe ser un número positivo`);
     }
-  };
-
-  // Obtiene la imagen/color del vehículo basado en la marca
-  const getVehicleImage = (brand: string): string => {
-    const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'];
-    return colors[brand.length % colors.length];
   };
 
   // Elimina un vehículo
@@ -468,7 +495,7 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
     };
   }
 
-  const contextValue: FirstRegistrationContextType = {
+  const contextValue: FirstRegistrationContextType = useMemo(() => ({
     // Estado
     currentScreen,
     vehicles,
@@ -502,6 +529,10 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
     setFormData,
     validateForm,
     handleSubmit,
+    handleModelChange,
+    handleYearChange,
+    handleMileageChange,
+    handleBrandChange,
     
     // Acciones de búsqueda de marcas
     handleBrandSearch,
@@ -526,7 +557,22 @@ export const FirstRegistrationProvider: React.FC<{ children: React.ReactNode }> 
     
     // Utilidades
     getVehicleImage,
-  };
+  }), [
+    // Solo dependencias esenciales que realmente afectan el contexto
+    currentScreen,
+    vehicles,
+    selectedVehicle,
+    currentStep,
+    formData,
+    errors,
+    showMileageModal,
+    newMileage,
+    brandSearch,
+    showCustomBrandModal,
+    customBrandName,
+    filteredBrands
+    // Removidas: userPlan, maintenanceHistory (no cambian frecuentemente)
+  ]);
 
   return (
     <FirstRegistrationContext.Provider value={contextValue}>

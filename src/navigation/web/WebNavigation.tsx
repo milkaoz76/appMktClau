@@ -9,13 +9,13 @@ import { navigationLogger } from '../../shared/utils/logger';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { WebContent } from './WebContent';
-import { SidebarConfig, TopBarConfig, NavigationItem } from '../../shared/types/navigation';
+import { SidebarConfig, TopBarConfig, NavigationItem, NavigationConfig } from '../../shared/types/navigation';
 
 /**
  * Props para WebNavigation
  */
 export interface WebNavigationProps {
-  config: any; // Configuración web específica
+  config: { sidebar?: SidebarConfig; topBar?: TopBarConfig };
   onRouteChange?: (route: string) => void;
   children?: React.ReactNode;
 }

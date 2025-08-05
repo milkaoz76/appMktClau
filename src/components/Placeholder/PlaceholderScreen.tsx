@@ -4,7 +4,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '../../navigation/NavigationContext';
+import { useNavigation } from '@/navigation/NavigationContext';
 
 interface PlaceholderScreenProps {
   title: string;
